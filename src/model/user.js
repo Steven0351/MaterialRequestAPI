@@ -1,2 +1,4 @@
 import mongoose from 'mongoose';
-import PurchaseRequest from './purchaserequest';
+
+
+let Schema = mongoose.Schema;
