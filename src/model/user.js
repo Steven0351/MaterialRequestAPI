@@ -2,10 +2,20 @@ import mongoose from 'mongoose';
 import passportLocalMongoose from 'passport-local-mongoose';
 let Schema = mongoose.Schema;
 
-let user = new Schema({
-  name: String,
-  password: String
+let User = new Schema({
+  username: {
+    type: String,
+    required: true
+  },
+  role: {
+    type: String,
+    required: true
+  },
+  password: {
+    type: String,
+    required: true
+  }
 });
 
 User.plugin(passportLocalMongoose);
-module.exports = mongoose.model('User', user);
+module.exports = mongoose.model('User', User);

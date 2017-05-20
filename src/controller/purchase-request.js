@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { Router } from 'express';
-import PurchaseRequest from '../model/purchaserequest';
-import { authenitcate } from '../middleware/authMiddleware';
+import PurchaseRequest from '../model/purchase-request';
+import { authenitcate } from '../middleware/auth-middleware';
 
 export default({ config, db }) => {
   let api = Router();

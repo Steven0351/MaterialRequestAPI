@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
+import User from './user'
 let Schema = mongoose.Schema;
 
-let purchaseRequestSchema = new Schema({
+let PurchaseRequestSchema = new Schema({
     inventoryID: {
         type: String,
         required: true
@@ -13,7 +14,12 @@ let purchaseRequestSchema = new Schema({
     shippingMethod: {
         type: String,
         required: true
+    },
+    requestor: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
     }
 });
 
-module.exports = mongoose.model('PurchaseRequest', purchaseRequestSchema);
+module.exports = mongoose.model('PurchaseRequest', PurchaseRequestSchema);
