@@ -8,3 +8,6 @@ npm install --save-dev nodemon eslint babel-cli babel-core babel-eslint babel-pr
 
 ###Authentication-Related Packages###
 npm install --save express-jwt jsonwebtoken passport passport-local passport-local-mongoose
+
+####notes####
+control-c to shutdown local mongod instance

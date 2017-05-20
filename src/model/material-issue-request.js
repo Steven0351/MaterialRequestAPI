@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import User from './user';
 let Schema = mongoose.Schema;
 
-let MaterialIssueRequest = new Schema({
+let MaterialIssueRequestSchema = new Schema({
   invendtoryID: {
     type: String,
     required: true

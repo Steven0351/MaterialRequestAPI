@@ -13,7 +13,7 @@ app.server = http.createServer(app);
 
 // Middleware
 // parse application/json
-app.user(bodyParser.json({
+app.use(bodyParser.json({
   limit: config.bodyLimit
 }));
 
@@ -32,7 +32,7 @@ passport.deserializeUser(User.deserializeUser());
 // api routes v1
 app.use('/api/v1', routes);
 
-app.server.listen(config.port());
+app.server.listen(config.port);
 console.log(`Started on port ${app.server.address().port}`);
 
 export default app;

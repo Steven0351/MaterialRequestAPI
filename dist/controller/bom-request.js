@@ -10,9 +10,9 @@ var _mongoose2 = _interopRequireDefault(_mongoose);
 
 var _express = require('express');
 
-var _purchaseRequest = require('../model/purchase-request');
+var _bomRequest = require('../model/bom-request');
 
-var _purchaseRequest2 = _interopRequireDefault(_purchaseRequest);
+var _bomRequest2 = _interopRequireDefault(_bomRequest);
 
 var _authMiddleware = require('../middleware/auth-middleware');
 
@@ -24,32 +24,31 @@ exports.default = function (_ref) {
 
   var api = (0, _express.Router)();
 
-  // '/v1/purchase-request/add - Create
+  // 'v1/bom-request/add' - Create
   api.post('/add', _authMiddleware.authentitcate, function (req, res) {
-    var newPurchaseRequest = new _purchaseRequest2.default();
-    newPurchaseRequest.inventoryID = req.body.inventoryID;
-    newPurchaseRequest.quantity = req.body.quantity;
-    newPurchaseRequest.shippingMethod = req.body.shippingMethod;
-    newPurchaseRequest.requestor = req.body.requestor;
+    var newBomRequest = new _bomRequest2.default();
+    newBomRequest.proposedTopLevelID = req.body.proposedTopLevelID;
+    newBomRequest.subcomponents = req.body.subcomponents;
+    newBomRequest.requestor = req.body.requestor;
 
-    newPurchaseRequest.save(function (err) {
+    newBomRequest.save(function (err) {
       if (err) {
         res.send(err);
       }
-      res.json({ message: 'Purchase Request saved successfully' });
+      res.json({ message: 'New BOM Request successfully saved' });
     });
   });
 
-  // 'v1/purchase-request - Read
+  // 'v1/bom-request' - Read
   api.get('/', _authMiddleware.authentitcate, function (req, res) {
-    _purchaseRequest2.default.find({}, function (err, purchaseRequests) {
+    _bomRequest2.default.find({}, function (err, bomRequests) {
       if (err) {
         res.send(err);
       }
-      res.json(purchaseRequests);
+      res.json(bomRequests);
     });
   });
 
   return api;
 };
-//# sourceMappingURL=purchase-request.js.map
+//# sourceMappingURL=bom-request.js.map

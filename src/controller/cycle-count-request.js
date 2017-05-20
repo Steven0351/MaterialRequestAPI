@@ -2,13 +2,13 @@ import mongoose from 'mongoose';
 import { Router } from 'express';
 import CycleCountRequest from '../model/cycle-count-request';
 import CountRequest from '../model/count-request';
-import { authentitcate } from '../middleware/auth-middleware';
+import { authenticate } from '../middleware/auth-middleware';
 
 export default({ config, db}) => {
   let api = Router();
 
   // 'v1/cycle-count-request/add - Create
-  api.post('/add', authentitcate, (req, res) => {
+  api.post('/add', authenticate, (req, res) => {
     let newCycleCountRequest = new CycleCountRequest();
     newCycleCountRequest.countRequests = req.body.countRequests;
     newCycleCountRequest.requestor = req.body.requestor;
@@ -22,7 +22,7 @@ export default({ config, db}) => {
   });
 
   // 'v1/cycle-count-request/add/:id - Add cycle count items
-  api.post('/cycle-count-request/add/:id', authentitcate, (req, res) => {
+  api.post('/cycle-count-request/add/:id', authenticate, (req, res) => {
     CycleCountRequest.findById(req.params.id, (err, cycleCountRequest) => {
       if (err) {
         res.send(err);
@@ -48,7 +48,7 @@ export default({ config, db}) => {
   });
 
   // 'v1/cycle-count-request - Read
-  api.get('/', authentitcate, (req, res) => {
+  api.get('/', authenticate, (req, res) => {
     CycleCountRequest.find({}, (err, cycleCountRequests) => {
       if (err) {
         res.send(err);

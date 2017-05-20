@@ -12,7 +12,18 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var Schema = _mongoose2.default.Schema;
 
-var BomRequestSchema = new Schema({});
+var BomRequestSchema = new Schema({
+  proposedTopLevelID: {
+    type: String,
+    required: true
+  },
+  subcomponents: { String: Number },
+  requestor: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  }
+});
 
 module.exports = _mongoose2.default.model('BomRequest', BomRequestSchema);
 //# sourceMappingURL=bom-request.js.map

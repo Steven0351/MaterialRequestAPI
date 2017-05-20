@@ -3,18 +3,9 @@ import passportLocalMongoose from 'passport-local-mongoose';
 let Schema = mongoose.Schema;
 
 let User = new Schema({
-  username: {
-    type: String,
-    required: true
-  },
-  role: {
-    type: String,
-    required: true
-  },
-  password: {
-    type: String,
-    required: true
-  }
+  username: String,
+  role: String,
+  password: String
 });
 
 User.plugin(passportLocalMongoose);

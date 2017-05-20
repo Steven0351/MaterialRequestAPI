@@ -17,7 +17,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var Schema = _mongoose2.default.Schema;
 
 var CycleCountRequestSchema = new Schema({
-  countRequests: [{ type: Schema.Types.ObjectId, ref: 'CountRequest', required: true }],
+  countRequests: [{ type: Schema.Types.ObjectId, ref: 'CountRequest' }],
   requestor: {
     type: Schema.Types.ObjectId,
     ref: 'User',

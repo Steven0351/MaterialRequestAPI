@@ -1,13 +1,13 @@
 import mongoose from 'mongoose';
 import { Router } from 'express';
 import MaterialIssueRequest from '../model/material-issue-request';
-import { authentitcate } from '../middleware/auth-middleware';
+import { authenticate } from '../middleware/auth-middleware';
 
 export default({ config, db }) => {
   let api = Router();
 
   // 'v1/material-issue-request/add - Create
-  api.post('/add', authentitcate, (req, res) => {
+  api.post('/add', authenticate, (req, res) => {
     let newMaterialIssueRequest = new MaterialIssueRequest();
     newMaterialIssueRequest.inventoryID = req.body.inventoryID;
     newMaterialIssueRequest.workOrder = req.body.workOrder;
@@ -22,7 +22,7 @@ export default({ config, db }) => {
   });
 
   // 'v1/material-issue-request - Read
-  api.get('/', authentitcate, (req, res) => {
+  api.get('/', authenticate, (req, res) => {
     MaterialIssueRequest.find({}, (err, materialIssueRequests) => {
       if (err) {
         res.send(err);
