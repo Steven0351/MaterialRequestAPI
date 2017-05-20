@@ -29,7 +29,7 @@
     "url": "git+https://stevensherry0351@bitbucket.org/stevensherry0351/gdt-mfg-material-request.git"
   },
   "author": "Steven Sherry",
-  "license": "ISC",
+  "license": "UNLICENSED",
   "homepage": "https://bitbucket.org/stevensherry0351/gdt-mfg-material-request#readme",
   "dependencies": {
     "body-parser": "^1.17.2",
