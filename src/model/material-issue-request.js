@@ -3,7 +3,7 @@ import User from './user';
 let Schema = mongoose.Schema;
 
 let MaterialIssueRequestSchema = new Schema({
-  invendtoryID: {
+  inventoryID: {
     type: String,
     required: true
   },

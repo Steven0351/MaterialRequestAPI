@@ -7,7 +7,7 @@ let BomRequestSchema = new Schema({
     type: String,
     required: true
   },
-  subcomponents: {String:Number},
+  subcomponents: {String : Number},
   requestor: {
     type: Schema.Types.ObjectId,
     ref: 'User',

@@ -6,11 +6,12 @@ import { authenticate } from '../middleware/auth-middleware';
 export default({ config, db }) => {
   let api = Router();
   
-  // 'v1/bom-request/add' - Create
+  // 'v1/create-material-request/add' - Create
   api.post('/add', authenticate, (req, res) => {
     let newCreateMaterialRequest = new CreateMaterialRequest();
-    newCreateMaterialRequest.proposedTopLevelID = req.body.proposedTopLevelID;
-    newCreateMaterialRequest.subcomponents = req.body.subcomponents;
+    newCreateMaterialRequest.manufacturerSKU = req.body.manufacturerSKU;
+    newCreateMaterialRequest.description = req.body.description;
+    newCreateMaterialRequest.purchaseRequest = req.body.purchaseRequest;
     newCreateMaterialRequest.requestor = req.body.requestor;
 
     newCreateMaterialRequest.save(err => {
@@ -21,7 +22,7 @@ export default({ config, db }) => {
     });
   });
 
-  // 'v1/bom-request' - Read
+  // 'v1/create-material-request' - Read
   api.get('/', authenticate, (req, res) => {
     CreateMaterialRequest.find({}, (err, createMaterialRequests) => {
       if (err) {

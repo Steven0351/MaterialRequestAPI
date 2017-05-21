@@ -21,8 +21,8 @@ export default({ config, db}) => {
     });
   });
 
-  // 'v1/cycle-count-request/add/:id - Add cycle count items
-  api.post('/cycle-count-request/add/:id', authenticate, (req, res) => {
+  // 'v1/cycle-count-request/add/:id - Add cycle count items - Update
+  api.put('/:id', authenticate, (req, res) => {
     CycleCountRequest.findById(req.params.id, (err, cycleCountRequest) => {
       if (err) {
         res.send(err);
