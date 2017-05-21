@@ -32,7 +32,7 @@ export default({ config, db}) => {
   });
 
 
-  // 'v1/cycle-count-request/:id - Add cycle count items 
+  // 'v1/cycle-count-request/inventory-items/add/:id - Add cycle count items 
   api.post('/inventory-items/add/:id', authenticate, (req, res) => {
     CycleCountRequest.findById(req.params.id, (err, cycleCountRequest) => {
       if (err) {

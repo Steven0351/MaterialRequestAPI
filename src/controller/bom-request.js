@@ -10,7 +10,6 @@ export default({ config, db }) => {
   api.post('/add', authenticate, (req, res) => {
     let newBomRequest = new BomRequest();
     newBomRequest.proposedTopLevelID = req.body.proposedTopLevelID;
-    newBomRequest.subcomponents = req.body.subcomponents;
     newBomRequest.requestor = req.body.requestor;
 
     newBomRequest.save(err => {
@@ -18,6 +17,32 @@ export default({ config, db }) => {
         res.send(err);
       }
       res.json({message: 'New BOM Request successfully saved'});
+    });
+  });
+
+  // 'v1/bom-request/inventory-items/add/:id - add subcomponents to BomRequest 
+  api.post('/inventory-items/add/:id', authenticate, (req, res) => {
+    BomRequest.findById(req.params.id, (err, bomRequest) => {
+      if (err) {
+        res.send(err);
+      }
+      let newSubcomponent = new InventoryItem();
+
+      newSubcomponent.inventoryID = req.body.inventoryID;
+      newSubcomponent.quantity = req.body.quantity;
+      newSubcomponent.bomRequest = bomRequest._id;
+      newSubcomponent.save((err, bomRequestSuccess) => {
+        if (err) {
+          res.send(err);
+        }
+        bomRequest.countRequests.push(newSubcomponent);
+        bomRequest.save((err) => {
+          if (err) {
+            res.send(err);
+          }
+          res.json({message: 'Inventory Item successfully added to BOM request'});
+        });
+      });
     });
   });
 
