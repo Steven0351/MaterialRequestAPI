@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { Router } from 'express';
 import CycleCountRequest from '../model/cycle-count-request';
-import CountRequest from '../model/count-request';
+import InventoryItem from '../model/inventory-item';
 import { authenticate } from '../middleware/auth-middleware';
 
 export default({ config, db}) => {
@@ -21,13 +21,24 @@ export default({ config, db}) => {
     });
   });
 
-  // 'v1/cycle-count-request/add/:id - Add cycle count items - Update
-  api.put('/:id', authenticate, (req, res) => {
+  // 'v1/cycle-count-request - Read
+  api.get('/', authenticate, (req, res) => {
+    CycleCountRequest.find({}, (err, cycleCountRequests) => {
+      if (err) {
+        res.send(err);
+      }
+      res.json(cycleCountRequests);
+    });
+  });
+
+
+  // 'v1/cycle-count-request/:id - Add cycle count items 
+  api.post('/inventory-items/add/:id', authenticate, (req, res) => {
     CycleCountRequest.findById(req.params.id, (err, cycleCountRequest) => {
       if (err) {
         res.send(err);
       }
-      let newCountRequest = new CountRequest();
+      let newCountRequest = new InventoryItem();
 
       newCountRequest.inventoryID = req.body.inventoryID;
       newCountRequest.binLocations = req.body.binLocations;
@@ -41,19 +52,9 @@ export default({ config, db}) => {
           if (err) {
             res.send(err);
           }
-          res.json({message: 'Count request successfully added'});
+          res.json({message: 'Inventory Item successfully added to cycle count request'});
         });
       });
-    });
-  });
-
-  // 'v1/cycle-count-request - Read
-  api.get('/', authenticate, (req, res) => {
-    CycleCountRequest.find({}, (err, cycleCountRequests) => {
-      if (err) {
-        res.send(err);
-      }
-      res.json(cycleCountRequests);
     });
   });
 

@@ -1,10 +1,10 @@
 import mongoose from 'mongoose';
 import User from './user';
-import CountRequest from './count-request';
+import InventoryItem from './inventory-item';
 let Schema = mongoose.Schema;
 
 let CycleCountRequestSchema = new Schema({
-  countRequests: [{type: Schema.Types.ObjectId, ref: 'CountRequest'}],
+  countRequests: [{type: Schema.Types.ObjectId, ref: 'InventoryItem'}],
   requestor: {
     type: Schema.Types.ObjectId,
     ref: 'User',

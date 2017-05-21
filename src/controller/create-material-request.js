@@ -18,7 +18,7 @@ export default({ config, db }) => {
       if (err) {
         res.send(err);
       }
-      res.json({message: 'New BOM Request successfully saved'});
+      res.json({message: 'New Create Material Request successfully saved'});
     });
   });
 

@@ -3,10 +3,7 @@ import User from './user';
 let Schema = mongoose.Schema;
 
 let MaterialIssueRequestSchema = new Schema({
-  inventoryID: {
-    type: String,
-    required: true
-  },
+  inventoryToBeIssued: [{type: Schema.Types.ObjectId, ref: 'InventoryItem'}],
   workOrder: {
     type: String,
     required: true
