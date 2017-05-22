@@ -12,6 +12,7 @@ export default({ config, db }) => {
     let newPurchaseRequest = new PurchaseRequest();
     newPurchaseRequest.itemsToBePurchased = req.body.itemsToBePurchased;
     newPurchaseRequest.shippingMethod = req.body.shippingMethod;
+    newPurchaseRequest.isHot = req.body.isHot;
     newPurchaseRequest.requestor = req.body.requestor;
 
     newPurchaseRequest.save(err => {
@@ -48,6 +49,53 @@ export default({ config, db }) => {
     });
   });
 
+  // 'v1/purchase-request/:id - Update purchase request
+  api.put('/:id', authenticate, (req, res) => {
+    PurchaseRequest.findById(req.params.id, (err, purchaseRequest) => {
+      if (err) {
+        res.send(err);
+      } else if (req.body.requestor != purchaseRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+        res.json({message: 'You do not have permission to edit this request'});
+        return;
+      }
+      purchaseRequest.itemsToBePurchased = req.body.itemsToBePurchased;
+      purchaseRequest.shippingMethod = req.body.shippingMethod;
+      purchaseRequest.isHot = req.body.isHot;
+      purchaseRequest.save((err, purchaseRequestUpdated) => {
+        if (err) {
+          res.send(err);
+        }
+        res.json({message: 'Purchase request successfully updated'});
+      });
+    });
+  });
+  
+// 'v1/purchase-request/:id' - Delete purchase request
+  api.delete('/:id', authenticate, (req, res) => {
+    PurchaseRequest.findById(req.params.id, (err, purchaseRequest) => {
+      if (err) {
+        res.status(500).send(err);
+      } else if (purchaseRequest == null) {
+        res.status(404).send('Purchase request not found');
+      } else if (req.body.requestor != purchaseRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+        res.json({message: 'You do not have permission to delete this request'});
+      }
+      PurchaseRequest.remove({_id: req.params.id}, (err, purchaseRequest) => {
+        if (err) {
+          res.status(500).send(err);
+          return;
+        }
+        InventoryItem.remove({purchaseRequest: req.params.id}, (err, inventoryItem) => {
+          if (err) {
+            res.send(err);
+          }
+          res.json({message: 'Purchase request successfully deleted'});
+        });
+      });
+    });
+  });
+
+
   // 'v1/purchase-request - Read
   api.get('/', authenticate, (req, res) => {
     PurchaseRequest.find({},(err, purchaseRequests) => {
@@ -58,5 +106,5 @@ export default({ config, db }) => {
       });
     });
 
-    return api;
+  return api;
 }

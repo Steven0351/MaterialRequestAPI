@@ -9,6 +9,7 @@ let PurchaseRequestSchema = new Schema({
         type: String,
         required: true
     },
+    isHot: Boolean,
     requestor: {
       type: Schema.Types.ObjectId,
       ref: 'User',
