@@ -12,6 +12,7 @@ let PurchaseRequestSchema = new Schema({
     orderHasBeenPlaced: Boolean,
     orderAcknowledgementReceived: Boolean,
     purchaseOrderNumber: String,
+    vendor: String,
     trackingInformation: String,
     requestor: {
       type: Schema.Types.ObjectId,
