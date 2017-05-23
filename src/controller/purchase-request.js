@@ -4,6 +4,8 @@ import PurchaseRequest from '../model/purchase-request';
 import InventoryItem from '../model/inventory-item';
 import { authenticate } from '../middleware/auth-middleware';
 
+let today = new Date();
+
 export default({ config, db }) => {
   let api = Router();
 
@@ -12,8 +14,12 @@ export default({ config, db }) => {
     let newPurchaseRequest = new PurchaseRequest();
     newPurchaseRequest.itemsToBePurchased = req.body.itemsToBePurchased;
     newPurchaseRequest.shippingMethod = req.body.shippingMethod;
-    newPurchaseRequest.isHot = req.body.isHot;
+    newPurchaseRequest.isHot = req.body.isHot || false;
+    purchaseRequest.orderHasBeenPlaced = req.body.orderHasBeenPlaced || false;
+    purchaseRequest.orderAcknowledgementReceived = req.body.orderAcknowledgementReceived || false;
+    purchaseRequest.trackingInformation = req.body.trackingInformation || 'No tracking available';
     newPurchaseRequest.requestor = req.body.requestor;
+    newPurchaseRequest.dateRequested = `${today.getMonth()+1}-${today.getDate()}-${today.getFullYear()}`;
 
     newPurchaseRequest.save(err => {
       if (err) {
@@ -61,6 +67,9 @@ export default({ config, db }) => {
       purchaseRequest.itemsToBePurchased = req.body.itemsToBePurchased;
       purchaseRequest.shippingMethod = req.body.shippingMethod;
       purchaseRequest.isHot = req.body.isHot;
+      purchaseRequest.orderHasBeenPlaced = req.body.orderHasBeenPlaced;
+      purchaseRequest.orderAcknowledgementReceived = req.body.orderAcknowledgementReceived;
+      purchaseRequest.trackingInformation = req.body.trackingInformation;
       purchaseRequest.save((err, purchaseRequestUpdated) => {
         if (err) {
           res.send(err);
@@ -96,13 +105,33 @@ export default({ config, db }) => {
   });
 
 
-  // 'v1/purchase-request - Read
+  // 'v1/purchase-request - get all purchase requests - Read
   api.get('/', authenticate, (req, res) => {
     PurchaseRequest.find({},(err, purchaseRequests) => {
       if (err) {
         res.send(err);
       }
       res.json(purchaseRequests);
+      });
+    });
+
+    // 'v1/purchase-request/isHot/:isHot - get all purchase requests matching input boolean - Read
+    api.get('/isHot/:isHot', authenticate, (req, res) => {
+      PurchaseRequest.find({'isHot': req.params.isHot}, (err, purchaseRequests) => {
+        if (err) {
+          res.send(err);
+        }
+        res.json(purchaseRequests);
+      });
+    });
+
+    // 'v1/purchase-request/orderHasBeenPlaced/:orderHasBeenPlaced' - get all purchase requests matching input boolean - Read
+    api.get('/orderHasBeenPlaced/:orderHasBeenPlaced', authenticate, (req, res) => {
+      PurchaseRequest.find({'orderHasBeenPlaced': req.params.orderHasBeenPlaced}, (err, purchaseRequests) => {
+        if (err) {
+          res.send(err);
+        }
+        res.json(purchaseRequests);
       });
     });
 
