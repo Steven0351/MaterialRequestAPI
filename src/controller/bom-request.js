@@ -1,7 +1,10 @@
 import mongoose from 'mongoose';
 import { Router } from 'express';
 import BomRequest from '../model/bom-request';
+import InventoryItem from '../model/inventory-item';
 import { authenticate } from '../middleware/auth-middleware';
+
+let today = new Date();
 
 export default({ config, db }) => {
   let api = Router();
@@ -11,7 +14,7 @@ export default({ config, db }) => {
     let newBomRequest = new BomRequest();
     newBomRequest.proposedTopLevelID = req.body.proposedTopLevelID;
     newBomRequest.requestor = req.body.requestor;
-
+    newBomRequest.dateRequested = `${today.getMonth()+1}-${today.getDate()}-${today.getFullYear()}`;
     newBomRequest.save(err => {
       if (err) {
         res.send(err);
@@ -35,12 +38,54 @@ export default({ config, db }) => {
         if (err) {
           res.send(err);
         }
-        bomRequest.countRequests.push(newSubcomponent);
+        bomRequest.subcomponents.push(newSubcomponent);
         bomRequest.save((err) => {
           if (err) {
             res.send(err);
           }
           res.json({message: 'Inventory Item successfully added to BOM request'});
+        });
+      });
+    });
+  });
+
+  // 'v1/bom-request/inventory-items/:bomRequest/:inventoryID - Update Inventory Item
+  api.put('/inventory-items/:bomRequest/:id', authenticate, (req, res) => {
+    InventoryItem.find({bomRequest: req.params.bomRequest}, (err, invetoryItems) => {
+      if (err) {
+        res.send(err);
+      }
+      InventoryItem.findById(req.params.id, (err, inventoryItem) => {
+        if (err) {
+          res.send(err);
+        }
+        inventoryItem.inventoryID = req.body.inventoryID;
+        inventoryItem.quantity = req.body.quantity;
+        inventoryItem.save((err) => {
+          if (err) {
+            res.send(err);
+          }
+          res.json({message: 'Inventory Item successfully updated'});
+        });
+      });
+    });
+  });
+
+  // 'v1/bom-request/inventory-items/:bomRequest/:inventoryID - Delete Inventory Item
+  api.delete('/inventory-items/:bomRequest/:id', authenticate, (req, res) => {
+    InventoryItem.find({bomRequest: req.params.bomRequest}, (err, invetoryItems) => {
+      if (err) {
+        res.send(err);
+      }
+      InventoryItem.findById(req.params.id, (err, inventoryItem) => {
+        if (err) {
+          res.send(err);
+        }
+        InventoryItem.remove(req.params.id, (err, inventoryItem) => {
+          if (err) {
+            res.send(err);
+          }
+          res.json({message: 'Inventory Item successfully deleted'});
         });
       });
     });
@@ -56,8 +101,5 @@ export default({ config, db }) => {
     });
   });
   
-// 'v1/bom-request
-
-
   return api;
 }

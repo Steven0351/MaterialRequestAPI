@@ -50,5 +50,15 @@ export default ({ config, db }) => {
     res.status(200).json(req.user);
   });
 
+  // 'Obtain a list of all users'
+  api.get('/', authenticate, (req, res) => {
+    User.find({}, (err, users) => {
+      if (err) {
+        res.send(err);
+      }
+      res.json(users);
+    });
+  });
+
   return api;
 }

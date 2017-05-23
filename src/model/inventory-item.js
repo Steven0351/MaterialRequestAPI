@@ -6,10 +6,7 @@ import MaterialIssueRequest from './material-issue-request'
 let Schema = mongoose.Schema;
 
 let InventoryItemSchema = new Schema({
-  inventoryID: {
-    type: String,
-    required: true
-  },
+  inventoryID: String,
   quantity: Number,
   binLocations: [String],
   cycleCountRequest: {

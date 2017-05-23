@@ -19,7 +19,7 @@ initializeDb(db => {
   // internal middleware
   router.use(middleware({ config, db }));
   // api routes v1 
-  router.use('/bomrequest', bomrequest({ config, db }));
+  router.use('/bom-request', bomrequest({ config, db }));
   router.use('/create-material-request', creatematerialrequest({ config, db }));
   router.use('/cycle-count-request', cyclecountrequest({ config, db }));
   router.use('/material-issue-request', materialissuerequest({ config, db }));
