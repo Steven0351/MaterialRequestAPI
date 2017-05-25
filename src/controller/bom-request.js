@@ -89,6 +89,45 @@ export default({ config, db }) => {
         });
       });
     });
+    api.put(`/${req.params.bomRequest}/${req.params.id}`, (req, res) => {
+      BomRequest.findById(req.params.bomRequest, (err, bomRequest) => {
+        let inventoryItem = req.params.id;
+        var i;
+        for (i = 0; i < bomRequest.subcomponents.count; i++) {
+          if (bomRequest.subcomponents[i] === inventoryItem) {
+            bomRequest.subcomponents.splice(i,1);
+          }
+        }
+      });
+    });
+  });
+
+  // 'v1/bom-request/:id - Delete BOM Request
+  api.delete('/:id', authenticate, (req, res) => {
+    BomRequest.findById(req.params.id, (err, bomRequest) => {
+      if (err) {
+        res.send(err);
+      }
+      BomRequest.remove(req.params.id, (err, success) => {
+        if (err) {
+          res.send(err);
+        }
+        res.json({message: 'BOM Request successfully deleted'});
+      });
+    });
+    api.delete(`/inventory-items/${req.params.id}`, (req, res) => {
+      InventoryItem.find({bomRequest: req.params.id}, (err, inventoryItems) => {
+        if (err) {
+          res.send(err);
+        }
+        InventoryItem.remove(req.params.id, (err, success) => {
+          if (err) {
+            res.send(err);
+          }
+          res.json({message: 'BOM Request subcompoents deleted from inventory-items DB'});
+        });
+      });
+    });
   });
 
   // 'v1/bom-request' - Read
