@@ -71,33 +71,22 @@ export default({ config, db }) => {
     });
   });
 
-  // 'v1/bom-request/inventory-items/:bomRequest/:inventoryID - Delete Inventory Item
+  // 'v1/bom-request/inventory-items/:bomRequest/:inventoryID - Delete Inventory Item from BOM Request and Database
   api.delete('/inventory-items/:bomRequest/:id', authenticate, (req, res) => {
-    InventoryItem.find({bomRequest: req.params.bomRequest}, (err, invetoryItems) => {
+    InventoryItem.findById(req.params.id, (err, inventoryItem) => {
       if (err) {
         res.send(err);
       }
-      InventoryItem.findById(req.params.id, (err, inventoryItem) => {
+      InventoryItem.remove({_id: req.params.id}, (err, inventoryItem) => {
         if (err) {
           res.send(err);
         }
-        InventoryItem.remove(req.params.id, (err, inventoryItem) => {
+        BomRequest.findOneAndUpdate({_id: req.params.bomRequest}, {$pull: {subcomponents: req.params.id}}, (err, bomRequest) => {
           if (err) {
             res.send(err);
           }
-          res.json({message: 'Inventory Item successfully deleted'});
+          res.json({message: 'Inventory Item deleted and removed from BOM Request'});
         });
-      });
-    });
-    api.put(`/${req.params.bomRequest}/${req.params.id}`, (req, res) => {
-      BomRequest.findById(req.params.bomRequest, (err, bomRequest) => {
-        let inventoryItem = req.params.id;
-        var i;
-        for (i = 0; i < bomRequest.subcomponents.count; i++) {
-          if (bomRequest.subcomponents[i] === inventoryItem) {
-            bomRequest.subcomponents.splice(i,1);
-          }
-        }
       });
     });
   });
@@ -108,7 +97,7 @@ export default({ config, db }) => {
       if (err) {
         res.send(err);
       }
-      BomRequest.remove(req.params.id, (err, success) => {
+      BomRequest.remove({_id: req.params.id}, (err, success) => {
         if (err) {
           res.send(err);
         }
@@ -120,11 +109,11 @@ export default({ config, db }) => {
         if (err) {
           res.send(err);
         }
-        InventoryItem.remove(req.params.id, (err, success) => {
+        InventoryItem.remove({bomRequest: req.params.id}, (err, success) => {
           if (err) {
             res.send(err);
           }
-          res.json({message: 'BOM Request subcompoents deleted from inventory-items DB'});
+          res.json({message: 'BOM Request subcomponents deleted from inventory-items DB'});
         });
       });
     });

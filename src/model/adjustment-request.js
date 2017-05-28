@@ -4,7 +4,7 @@ import InventoryItem from './inventory-item';
 
 let Schema = mongoose.Schema;
 
-let ScrapRequestSchema = new Schema({
+let AdjustmentRequestSchema = new Schema({
   itemsToScrap: [{type: Schema.Types.ObjectId, ref: 'InventoryItem'}],
   reason: String,
   requestor: {
@@ -15,4 +15,4 @@ let ScrapRequestSchema = new Schema({
   dateRequested: String
 });
 
-module.exports = mongoose.model('ScrapRequest', ScrapRequestSchema);
+module.exports = mongoose.model('AdjustmentRequest', AdjustmentRequestSchema);
