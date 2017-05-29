@@ -12,7 +12,6 @@ export default({ config, db }) => {
 // '/v1/purchase-request/add - Create
   api.post('/add', authenticate, (req, res) => {
     let newPurchaseRequest = new PurchaseRequest();
-    newPurchaseRequest.itemsToBePurchased = req.body.itemsToBePurchased;
     newPurchaseRequest.shippingMethod = req.body.shippingMethod;
     newPurchaseRequest.isHot = req.body.isHot || false;
     purchaseRequest.orderHasBeenPlaced = req.body.orderHasBeenPlaced || false;
@@ -21,7 +20,7 @@ export default({ config, db }) => {
     newPurchaseRequest.requestor = req.body.requestor;
     newPurchaseRequest.dateRequested = `${today.getMonth()+1}-${today.getDate()}-${today.getFullYear()}`;
 
-    newPurchaseRequest.save(err => {
+    newPurchaseRequest.save((err) => {
       if (err) {
         res.send(err);
         }
@@ -34,24 +33,27 @@ export default({ config, db }) => {
     PurchaseRequest.findById(req.params.id, (err, purchaseRequest) => {
       if (err) {
         res.send(err);
-      }
-      let itemToPurchase = new InventoryItem();
-
-      itemToPurchase.inventoryID = req.body.inventoryID;
-      itemToPurchase.quantity = req.body.quantity;
-      itemToPurchase.purchaseRequest = purchaseRequest._id;
-      itemToPurchase.save((err, toPurchase) => {
-        if (err) {
-          res.send(err);
-        }
-        purchaseRequest.itemsToBePurchased.push(itemToPurchase);
-        purchaseRequest.save((err) => {
+      } else if (req.body.requestor != purchaseRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+        res.json({message: 'You do not have permission to edit this request'});
+        return;
+      } else {
+        let itemToPurchase = new InventoryItem();
+        itemToPurchase.inventoryID = req.body.inventoryID;
+        itemToPurchase.quantity = req.body.quantity;
+        itemToPurchase.purchaseRequest = purchaseRequest._id;
+        itemToPurchase.save((err) => {
           if (err) {
             res.send(err);
           }
-          res.json({message: 'Inventory Item successfully added to purchase request'});
+          purchaseRequest.itemsToBePurchased.push(itemToPurchase);
+          purchaseRequest.save((err) => {
+            if (err) {
+              res.send(err);
+            }
+            res.json({message: 'Inventory Item successfully added to purchase request'});
+          });
         });
-      });
+      }
     });
   });
 
@@ -63,22 +65,46 @@ export default({ config, db }) => {
       } else if (req.body.requestor != purchaseRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
         res.json({message: 'You do not have permission to edit this request'});
         return;
+      } else {
+        purchaseRequest.itemsToBePurchased = req.body.itemsToBePurchased;
+        purchaseRequest.shippingMethod = req.body.shippingMethod;
+        purchaseRequest.isHot = req.body.isHot;
+        purchaseRequest.orderHasBeenPlaced = req.body.orderHasBeenPlaced;
+        purchaseRequest.orderAcknowledgementReceived = req.body.orderAcknowledgementReceived;
+        purchaseRequest.trackingInformation = req.body.trackingInformation;
+        purchaseRequest.save((err) => {
+          if (err) {
+            res.status(500).send(err);
+          }
+          res.status(200).json({message: 'Purchase request successfully updated'});
+        });
       }
-      purchaseRequest.itemsToBePurchased = req.body.itemsToBePurchased;
-      purchaseRequest.shippingMethod = req.body.shippingMethod;
-      purchaseRequest.isHot = req.body.isHot;
-      purchaseRequest.orderHasBeenPlaced = req.body.orderHasBeenPlaced;
-      purchaseRequest.orderAcknowledgementReceived = req.body.orderAcknowledgementReceived;
-      purchaseRequest.trackingInformation = req.body.trackingInformation;
-      purchaseRequest.save((err, purchaseRequestUpdated) => {
-        if (err) {
-          res.send(err);
-        }
-        res.json({message: 'Purchase request successfully updated'});
-      });
     });
   });
   
+  // 'v1/purchase-request/:id/:inventoryItem - Update purchase request line item
+  api.put('/inventory-items/:purchaseRequest/:inventoryItem', authenticate, (req, res) => {
+    PurchaseRequest.findById(req.params.purchaseRequest, (err, purchaseRequest) => {
+      if (err) {
+        res.send(err);
+      } else if (req.body.requestor != purchaseRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+        res.json({message: 'You do not have permission to edit this request'});
+        return;
+      } else {
+        InventoryItem.findById(req.params.inventoryItem, (err, lineItem) => {
+          lineItem.inventoryID = req.body.inventoryID;
+          lineItem.quantity = req.body.quantity;
+          lineItem.save((err) => {
+            if (err) {
+              res.send(err);
+            }
+            res.status(200).json({message: 'Line item successfully updated'})
+          });
+        });
+      }
+    });
+  });
+
 // 'v1/purchase-request/:id' - Delete purchase request
   api.delete('/:id', authenticate, (req, res) => {
     PurchaseRequest.findById(req.params.id, (err, purchaseRequest) => {
@@ -88,28 +114,51 @@ export default({ config, db }) => {
         res.status(404).send('Purchase request not found');
       } else if (req.body.requestor != purchaseRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
         res.json({message: 'You do not have permission to delete this request'});
-      }
-      PurchaseRequest.remove({_id: req.params.id}, (err, purchaseRequest) => {
-        if (err) {
-          res.status(500).send(err);
-          return;
-        }
-        InventoryItem.remove({purchaseRequest: req.params.id}, (err, inventoryItem) => {
+      } else {
+        PurchaseRequest.remove({_id: req.params.id}, (err, purchaseRequest) => {
           if (err) {
-            res.send(err);
+            res.status(500).send(err);
+            return;
           }
-          res.json({message: 'Purchase request successfully deleted'});
+          InventoryItem.remove({purchaseRequest: req.params.id}, (err, inventoryItem) => {
+            if (err) {
+              res.status(500).send(err);
+            }
+            res.status(200).json({message: 'Purchase request successfully deleted'});
+          });
         });
-      });
+      }
     });
   });
 
+  // 'v1/purchase-request/:id/:lineItem' - Delete purchase order line item
+  api.delete('/:id/:lineItem', authenticate, (req, res) => {
+    PurchaseRequest.findById(req.params.id, (err, purchaseRequest) => {
+      if (err) {
+        res.status(500).send(err);
+      } else if (req.body.requestor != purchaseRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+        res.json({message: 'You do not have permission to edit this request'});
+      } else {
+        InventoryItem.findByIdAndRemove(req.params.lineItem, (err, inventoryItem) => {
+          if (err) {
+            res.send(err);
+          }
+          PurchaseRequest.findByIdAndUpdate(req.params.id, {$pull: {itemsToBePurchased: req.params.lineItem}}, (err, purchaseRequest) => {
+            if (err) {
+              res.send(err)
+            }
+            res.json({message: 'Line item deleted and removed from purchase request'});
+          });
+        });
+      }
+    });
+  });
 
   // 'v1/purchase-request - get all purchase requests - Read
   api.get('/', authenticate, (req, res) => {
     PurchaseRequest.find({},(err, purchaseRequests) => {
       if (err) {
-        res.send(err);
+        res.status(500).send(err);
       }
       res.json(purchaseRequests);
       });
@@ -119,7 +168,7 @@ export default({ config, db }) => {
     api.get('/isHot/:isHot', authenticate, (req, res) => {
       PurchaseRequest.find({'isHot': req.params.isHot}, (err, purchaseRequests) => {
         if (err) {
-          res.send(err);
+          res.status(500).send(err);
         }
         res.json(purchaseRequests);
       });
@@ -129,7 +178,17 @@ export default({ config, db }) => {
     api.get('/orderHasBeenPlaced/:orderHasBeenPlaced', authenticate, (req, res) => {
       PurchaseRequest.find({'orderHasBeenPlaced': req.params.orderHasBeenPlaced}, (err, purchaseRequests) => {
         if (err) {
-          res.send(err);
+          res.status(500).send(err);
+        }
+        res.json(purchaseRequests);
+      });
+    });
+
+    // 'v1/purchase-request/requestor/:requestor' - get all purchase requests for specific requestor - Read
+    api.get('/requestor/:requestor', authenticate, (req, res) => {
+      PurchaseRequest.find({'requestor': req.params.requestor}, (err, purchaseRequests) => {
+        if (err) {
+          res.status(500).send(err);
         }
         res.json(purchaseRequests);
       });

@@ -28,66 +28,97 @@ export default({ config, db }) => {
     BomRequest.findById(req.params.id, (err, bomRequest) => {
       if (err) {
         res.send(err);
+      } else if (req.body.requestor != bomRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+        res.json({message: 'You do not have permission to edit this BOM Request'});
+      } else {
+        let newSubcomponent = new InventoryItem();
+        newSubcomponent.inventoryID = req.body.inventoryID;
+        newSubcomponent.quantity = req.body.quantity;
+        newSubcomponent.bomRequest = bomRequest._id;
+        newSubcomponent.save((err, bomRequestSuccess) => {
+          if (err) {
+            res.send(err);
+          }
+          bomRequest.subcomponents.push(newSubcomponent);
+          bomRequest.save((err) => {
+            if (err) {
+              res.send(err);
+            }
+            res.json({message: 'Inventory Item successfully added to BOM request'});
+          });
+        });
       }
-      let newSubcomponent = new InventoryItem();
+    });
+  });
 
-      newSubcomponent.inventoryID = req.body.inventoryID;
-      newSubcomponent.quantity = req.body.quantity;
-      newSubcomponent.bomRequest = bomRequest._id;
-      newSubcomponent.save((err, bomRequestSuccess) => {
-        if (err) {
-          res.send(err);
-        }
-        bomRequest.subcomponents.push(newSubcomponent);
+  api.put('/:id', authenticate, (req, res) => {
+    BomRequest.findById(req.params.id, (err, bomRequest) => {
+      if (err) {
+        res.send(err);
+      } else if (req.body.requestor != bomRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+        res.json({message: 'You do not have permission to edit this request'});
+      } else {
+        bomRequest.proposedTopLevelID = req.body.proposedTopLevelID;
         bomRequest.save((err) => {
           if (err) {
             res.send(err);
           }
-          res.json({message: 'Inventory Item successfully added to BOM request'});
+          res.json({message: 'BOM Request Successfully Updated'});
         });
-      });
+      }
     });
   });
 
   // 'v1/bom-request/inventory-items/:bomRequest/:inventoryID - Update Inventory Item
   api.put('/inventory-items/:bomRequest/:id', authenticate, (req, res) => {
-    InventoryItem.find({bomRequest: req.params.bomRequest}, (err, invetoryItems) => {
+    BomRequest.findById(req.params.bomRequest, (err, bomRequest) => {
       if (err) {
         res.send(err);
-      }
-      InventoryItem.findById(req.params.id, (err, inventoryItem) => {
-        if (err) {
-          res.send(err);
-        }
-        inventoryItem.inventoryID = req.body.inventoryID;
-        inventoryItem.quantity = req.body.quantity;
-        inventoryItem.save((err) => {
+      } else if (req.body.requestor != bomRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+        res.json({message: 'You do not have permission to edit this request'});
+      } else {
+        InventoryItem.find({bomRequest: req.params.bomRequest}, (err, invetoryItems) => {
           if (err) {
             res.send(err);
           }
-          res.json({message: 'Inventory Item successfully updated'});
+          InventoryItem.findById(req.params.id, (err, inventoryItem) => {
+            if (err) {
+              res.send(err);
+            }
+            inventoryItem.inventoryID = req.body.inventoryID;
+            inventoryItem.quantity = req.body.quantity;
+            inventoryItem.save((err) => {
+              if (err) {
+                res.send(err);
+              }
+              res.json({message: 'Inventory Item successfully updated'});
+            });
+          });
         });
-      });
+      }
     });
   });
 
   // 'v1/bom-request/inventory-items/:bomRequest/:inventoryID - Delete Inventory Item from BOM Request and Database
   api.delete('/inventory-items/:bomRequest/:id', authenticate, (req, res) => {
-    InventoryItem.findById(req.params.id, (err, inventoryItem) => {
+    BomRequest.findById(req.params.bomRequest, (err, bomRequest) => {
       if (err) {
         res.send(err);
-      }
-      InventoryItem.remove({_id: req.params.id}, (err, inventoryItem) => {
-        if (err) {
-          res.send(err);
-        }
-        BomRequest.findOneAndUpdate({_id: req.params.bomRequest}, {$pull: {subcomponents: req.params.id}}, (err, bomRequest) => {
+      } else if (req.body.requestor != bomRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+        res.json({message: 'You do not have permission to edit this request'});
+      } else {
+        InventoryItem.findByIdAndRemove(req.params.id, (err, inventoryItem) => {
           if (err) {
             res.send(err);
           }
-          res.json({message: 'Inventory Item deleted and removed from BOM Request'});
+          BomRequest.findOneAndUpdate({_id: req.params.bomRequest}, {$pull: {subcomponents: req.params.id}}, (err, bomRequest) => {
+            if (err) {
+              res.send(err);
+            }
+            res.json({message: 'Inventory Item deleted and removed from BOM Request'});
+          });
         });
-      });
+      }
     });
   });
 
@@ -96,26 +127,21 @@ export default({ config, db }) => {
     BomRequest.findById(req.params.id, (err, bomRequest) => {
       if (err) {
         res.send(err);
-      }
-      BomRequest.remove({_id: req.params.id}, (err, success) => {
-        if (err) {
-          res.send(err);
-        }
-        res.json({message: 'BOM Request successfully deleted'});
-      });
-    });
-    api.delete(`/inventory-items/${req.params.id}`, (req, res) => {
-      InventoryItem.find({bomRequest: req.params.id}, (err, inventoryItems) => {
-        if (err) {
-          res.send(err);
-        }
-        InventoryItem.remove({bomRequest: req.params.id}, (err, success) => {
+      } else if (req.body.requestor != bomRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+        res.json({message: 'You do not have permission to edit this request'});
+      } else {
+        bomRequest.remove((err) => {
           if (err) {
             res.send(err);
           }
-          res.json({message: 'BOM Request subcomponents deleted from inventory-items DB'});
+          InventoryItem.remove({bomRequest: req.params.id}, (err, success) => {
+            if (err) {
+              res.send(err);
+            }
+            res.json({message: 'BOM Request and subcomponents deleted from inventory-items DB'});
+          });
         });
-      });
+      }
     });
   });
 
