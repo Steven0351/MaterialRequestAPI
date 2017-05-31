@@ -10,7 +10,8 @@ let WorkOrderCompletionRequestSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'User',
     required: true
-  }
+  },
+  dateRequested: String
 });
 
 module.exports = mongoose.model('WorkOrderCompletionRequest', WorkOrderCompletionRequestSchema);
