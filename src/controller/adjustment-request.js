@@ -51,6 +51,7 @@ export default({ config, db }) => {
 		});
 	});
 
+	// 'v1/adjustment-request/:id' - Update AdjustmentRequest reason
 	api.put('/:id', authenticate, (req, res) => {
 		AdjustmentRequest.findById(req.params.id, (err, adjustmentRequest) => {
 			if (err) {
@@ -69,5 +70,87 @@ export default({ config, db }) => {
 		});
 	});
 
+	// 'v1/adjustment-request/inventory-items/:adjustmentRequest/:id' - Update Item to Adjust in Adjustment Request
+	api.put('/inventory-items/:adjustmentRequest/:id', authenticate, (req, res) => {
+		AdjustmentRequest.findById(req.params.id, (err, adjustmentRequest) => {
+			if (err) {
+				res.status(500).send(err);
+			} else if (req.body.requestor != adjustmentRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+				res.status(403).json({message: 'You do not have permission to edit this Adjustment Request'});
+			} else {
+				InventoryItem.findById(req.params.id, (err, itemToAdjust) => {
+					if (err) {
+						res.status(500).send(err);
+					}
+					itemToAdjust.inventoryID = req.body.inventoryID;
+					itemToAdjust.quantity = req.body.quantity;
+					itemToAdjust.save((err) => {
+						if (err) {
+							res.status(500).send(err);
+						}
+						res.status(200).json({message: 'Item to adjust successfully updated'});
+					});
+				});
+			}
+		});
+	});
+
+	// 'v1/adjustment-request/inventory-items/:adjustmentRequest/:id' - Delete itemToAdjust
+	api.delete('/inventory-items/:adjustmentRequest/:id', authenticate, (req, res) => {
+		AdjustmentRequest.findById(req.params.adjustmentRequest, (err, adjustmentRequest) => {
+			if (err) {
+				res.status(500).send(err);
+			} else if (req.body.requestor != adjustmentRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+				res.status(403).json({message: 'You do not have permission to edit this Adjustment Request'});
+			} else {
+				InventoryItem.findByIdAndRemove(req.params.id, (err, itemToAdjust) => {
+					if (err) {
+						res.status(500).send(err);
+					}
+					AdjustmentRequest.findByIdAndUpdate(req.params.adjustmentRequest, {$pull: {itemsToAdjust: req.params.id}},
+						(err, adjustmentRequest) => {
+							if (err) {
+								res.status(500).send(err);
+							}
+							res.status(200).json({message: 'Item to adjust successfully removed from Adjustment Request'});
+						});
+				});
+			}
+		});
+	});
+
+	// 'v1/adjustment-request/:id' - Delete Adjustment Request
+	api.delete('/:id', authenticate, (req, res) => {
+		AdjustmentRequest.findById(req.params.id, (err, adjustmentRequest) => {
+			if (err) {
+				res.status(500).send(err);
+			} else if (req.body.requestor != adjustmentRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+				res.status(403).json({message: 'You do not have permission to edit this Adjustment Request'});
+			} else {
+				adjustmentRequest.remove((err) => {
+					if (err) {
+						res.status(500).send(err);
+					}
+					InventoryItem.remove({adjustmentRequest: req.params.id}, (err, itemsToAdjust) => {
+						if (err) {
+							res.status(500).send(err);
+						}
+						res.status(200).json({message: 'Adjustment Request and itemsToAdjust deleted', itemsToAdjust});
+					});
+				});
+			}
+		});
+	});
+
+	// 'v1/adjustment-request/' - Read all adjustment requests
+	api.get('/', authenticate, (req, res) => {
+		AdjustmentRequest.find({}, (err, adjustmentRequests) => {
+		if (err) {
+				res.status(500).send(err);
+			}
+			res.status(200).json(adjustmentRequests);
+		});
+	});
+	
 	return api;
 }
