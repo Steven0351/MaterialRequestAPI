@@ -4,6 +4,8 @@ import CycleCountRequest from '../model/cycle-count-request';
 import InventoryItem from '../model/inventory-item';
 import { authenticate } from '../middleware/auth-middleware';
 
+let today = new Date();
+
 export default({ config, db}) => {
   let api = Router();
 
@@ -11,7 +13,7 @@ export default({ config, db}) => {
   api.post('/add', authenticate, (req, res) => {
     let newCycleCountRequest = new CycleCountRequest();
     newCycleCountRequest.requestor = req.body.requestor;
-
+    newCycleCountRequest.dateRequested = `${today.getMonth()+1}-${today.getDate()}-${today.getFullYear()}`;
     newCycleCountRequest.save(err => {
       if (err) {
         res.send(err);
