@@ -3,6 +3,8 @@ import { Router } from 'express';
 import CreateMaterialRequest from '../model/create-material-request';
 import { authenticate } from '../middleware/auth-middleware';
 
+let today = new Date();
+
 export default({ config, db }) => {
   let api = Router();
   
@@ -13,7 +15,7 @@ export default({ config, db }) => {
     newCreateMaterialRequest.description = req.body.description;
     newCreateMaterialRequest.purchaseRequest = req.body.purchaseRequest;
     newCreateMaterialRequest.requestor = req.body.requestor;
-
+    newCreateMaterialRequest.dateRequested = `${today.getMonth()+1}-${today.getDate()}-${today.getFullYear()}`;
     newCreateMaterialRequest.save(err => {
       if (err) {
         res.send(err);
@@ -57,6 +59,7 @@ export default({ config, db }) => {
           res.json({message: 'Create Material Request successfully deleted'});
         });
       }
+    });
   });
 
   // 'v1/create-material-request' - Read
