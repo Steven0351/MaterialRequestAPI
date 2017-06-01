@@ -24,6 +24,10 @@ let InventoryItemSchema = new Schema({
   purchaseRequest: {
     type: Schema.Types.ObjectId,
     ref: 'PurchaseRequest'
+  },
+  adjustmentRequest: {
+    type: Schema.Types.ObjectId,
+    ref: 'AdjustmentRequest'
   }
 });
 
