@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import User from './user';
 let Schema = mongoose.Schema;
 
-let UserRoleSchema = new Schema({
+let UserInformationSchema = new Schema({
   user: {
     type: Schema.Types.ObjectId,
     ref: 'User',
@@ -11,7 +11,15 @@ let UserRoleSchema = new Schema({
   role: {
     type: String,
     required: true
+  },
+  firstName: {
+    type: String,
+    required: true
+  },
+  lastName: {
+    type: String,
+    required: true
   }
 });
 
-module.exports = mongoose.model('UserRole', UserRoleSchema);
+module.exports = mongoose.model('UserInformation', UserInformationSchema);
