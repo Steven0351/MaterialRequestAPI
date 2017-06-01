@@ -10,10 +10,9 @@ import { generateAccessToken, respond, authenticate } from '../middleware/auth-m
 export default ({ config, db }) => {
   let api = Router();
 
-  // '/v1/account'
-  // need to add User.role to the register endpoint
+  // '/v1/user/register'
   api.post('/register', (req, res) => {
-    User.register(new User({ username: req.body.username, role: req.body.role }), req.body.password, function(err, account) {
+    User.register(new User({ username: req.body.username }), req.body.password, function(err, account) {
       if (err) {
         if(err.name === "UserExistsError") {
           console.log("User Exists");

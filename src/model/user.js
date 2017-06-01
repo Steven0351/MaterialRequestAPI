@@ -4,7 +4,6 @@ let Schema = mongoose.Schema;
 
 let User = new Schema({
   username: String,
-  role: String,
   password: String
 });
 
