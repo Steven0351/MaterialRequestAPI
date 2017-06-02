@@ -18,7 +18,7 @@ export default({ config, db }) => {
       if (err) {
         res.status(500).send(err);
       }
-      res.status(201).json({message: 'User information successfully created'});
+      res.status(201).json({message: 'User information successfully created'}, newUserInformation);
     });
   });
 
@@ -32,7 +32,7 @@ api.put('/:id', authenticate, (req, res) => {
       if (err) {
         res.status(500).send(err);
       }
-      res.status(200).json({message: 'User information successfully updated'});
+      res.status(200).json({message: 'User information successfully updated'}, newUserInformation);
     });
   });
 });
@@ -54,7 +54,7 @@ api.delete('/:id', authenticate, (req, res) => {
 
 // 'v1/user-information/' - Read all user information
 api.get('/', authenticate, (req, res) => {
-  if (req.body.role != 'admin') {
+  if (req.body.role != 'admin' || req.body.role != 'manager') {
     res.status(403).json({message: "You do not have permission to read other user's information"});
   } else {
     UserInformation.find({}, (err, usersInformation) => {
@@ -68,7 +68,7 @@ api.get('/', authenticate, (req, res) => {
 
 // 'v1/user-information/:id' - Read specific user information
 api.get('/:id', authenticate, (req, res) => {
-  if (req.body.role != 'admin' || req.body.user != req.params.id) {
+  if (req.body.role != 'admin' || req.body.role != 'manager' ||req.body.user != req.params.id) {
     res.status(403).json({message: "You do not have permission to read other user's information"});
   } else {
     UserInformation.findById(req.params.id, (err, userInformation) => {

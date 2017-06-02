@@ -18,27 +18,27 @@ export default({ config, db }) => {
     newCreateMaterialRequest.dateRequested = `${today.getMonth()+1}-${today.getDate()}-${today.getFullYear()}`;
     newCreateMaterialRequest.save(err => {
       if (err) {
-        res.send(err);
+        res.status(500).send(err);
       }
-      res.json({message: 'New Create Material Request successfully saved'});
+      res.status(201).json({message: 'New Create Material Request successfully saved'});
     });
   });
 
   api.put('/:id', authenticate, (req, res) => {
     CreateMaterialRequest.findById(req.params.id, (err, createMaterialRequest) => {
       if (err) {
-        res.send(err);
+        res.status(500).send(err);
       } else if (req.body.requestor != createMaterialRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
-        res.json({message: 'You do not have permission to edit this request'});
+        res.status(403).json({message: 'You do not have permission to edit this request'});
         return;
       } else {
         createMaterialRequest.manufacturerSKU = req.body.manufacturerSKU;
         createMaterialRequest.description = req.body.description;
         createMaterialRequest.save((err) => {
           if (err) {
-            res.send(err);
+            res.status(500).send(err);
           }
-          res.json({message: 'Create Material Request successfully update'});
+          res.status(200).json({message: 'Create Material Request successfully update'});
         });
       }
     });
@@ -47,16 +47,16 @@ export default({ config, db }) => {
   api.delete('/:id', authenticate, (req, res) => {
     CreateMaterialRequest.findById(req.params.id, (err, createMaterialRequest) => {
       if (err) {
-        res.send(err);
+        res.status(500).send(err);
       } else if (req.body.requestor != createMaterialRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
-        res.json({message: 'You do not have permission to edit this request'});
+        res.status(403).json({message: 'You do not have permission to edit this request'});
         return;
       } else {
         createMaterialRequest.remove((err) => {
           if (err) {
-            res.send(err);
+            res.status(500).send(err);
           }
-          res.json({message: 'Create Material Request successfully deleted'});
+          res.status(200).json({message: 'Create Material Request successfully deleted'});
         });
       }
     });
@@ -66,9 +66,9 @@ export default({ config, db }) => {
   api.get('/', authenticate, (req, res) => {
     CreateMaterialRequest.find({}, (err, createMaterialRequests) => {
       if (err) {
-        res.send(err);
+        res.status(500).send(err);
       }
-      res.json(createMaterialRequests);
+      res.status(200).json(createMaterialRequests);
     });
   });
   

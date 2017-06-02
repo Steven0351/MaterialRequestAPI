@@ -22,9 +22,9 @@ export default({ config, db }) => {
 
     newPurchaseRequest.save((err) => {
       if (err) {
-        res.send(err);
+        res.status(500).send(err);
         }
-        res.json({ message: 'Purchase Request saved successfully'});
+        res.status(201).json({ message: 'Purchase Request saved successfully'});
     });
   });
 
@@ -32,9 +32,9 @@ export default({ config, db }) => {
   api.post('/inventory-items/add/:id', authenticate, (req, res) => {
     PurchaseRequest.findById(req.params.id, (err, purchaseRequest) => {
       if (err) {
-        res.send(err);
+        res.status(500).send(err);
       } else if (req.body.requestor != purchaseRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
-        res.json({message: 'You do not have permission to edit this request'});
+        res.status(403).json({message: 'You do not have permission to edit this request'});
         return;
       } else {
         let itemToPurchase = new InventoryItem();
@@ -43,14 +43,14 @@ export default({ config, db }) => {
         itemToPurchase.purchaseRequest = purchaseRequest._id;
         itemToPurchase.save((err) => {
           if (err) {
-            res.send(err);
+            res.status(500).send(err);
           }
           purchaseRequest.itemsToBePurchased.push(itemToPurchase);
           purchaseRequest.save((err) => {
             if (err) {
-              res.send(err);
+              res.status(500).send(err);
             }
-            res.json({message: 'Inventory Item successfully added to purchase request'});
+            res.status(201).json({message: 'Inventory Item successfully added to purchase request'});
           });
         });
       }
@@ -61,9 +61,9 @@ export default({ config, db }) => {
   api.put('/:id', authenticate, (req, res) => {
     PurchaseRequest.findById(req.params.id, (err, purchaseRequest) => {
       if (err) {
-        res.send(err);
+        res.status(500).send(err);
       } else if (req.body.requestor != purchaseRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
-        res.json({message: 'You do not have permission to edit this request'});
+        res.status(403).json({message: 'You do not have permission to edit this request'});
         return;
       } else {
         purchaseRequest.itemsToBePurchased = req.body.itemsToBePurchased;
@@ -86,9 +86,9 @@ export default({ config, db }) => {
   api.put('/inventory-items/:purchaseRequest/:inventoryItem', authenticate, (req, res) => {
     PurchaseRequest.findById(req.params.purchaseRequest, (err, purchaseRequest) => {
       if (err) {
-        res.send(err);
+        res.status(500).send(err);
       } else if (req.body.requestor != purchaseRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
-        res.json({message: 'You do not have permission to edit this request'});
+        res.status(403).json({message: 'You do not have permission to edit this request'});
         return;
       } else {
         InventoryItem.findById(req.params.inventoryItem, (err, lineItem) => {
@@ -96,7 +96,7 @@ export default({ config, db }) => {
           lineItem.quantity = req.body.quantity;
           lineItem.save((err) => {
             if (err) {
-              res.send(err);
+              res.status(500).send(err);
             }
             res.status(200).json({message: 'Line item successfully updated'})
           });
@@ -113,7 +113,7 @@ export default({ config, db }) => {
       } else if (purchaseRequest == null) {
         res.status(404).send('Purchase request not found');
       } else if (req.body.requestor != purchaseRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
-        res.json({message: 'You do not have permission to delete this request'});
+        res.status(403).json({message: 'You do not have permission to delete this request'});
       } else {
         PurchaseRequest.remove({_id: req.params.id}, (err, purchaseRequest) => {
           if (err) {
@@ -137,17 +137,17 @@ export default({ config, db }) => {
       if (err) {
         res.status(500).send(err);
       } else if (req.body.requestor != purchaseRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
-        res.json({message: 'You do not have permission to edit this request'});
+        res.status(403).json({message: 'You do not have permission to edit this request'});
       } else {
         InventoryItem.findByIdAndRemove(req.params.lineItem, (err, inventoryItem) => {
           if (err) {
-            res.send(err);
+            res.status(500).send(err);
           }
           PurchaseRequest.findByIdAndUpdate(req.params.id, {$pull: {itemsToBePurchased: req.params.lineItem}}, (err, purchaseRequest) => {
             if (err) {
-              res.send(err)
+              res.status(500).send(err)
             }
-            res.json({message: 'Line item deleted and removed from purchase request'});
+            res.status(200).json({message: 'Line item deleted and removed from purchase request'});
           });
         });
       }
@@ -160,7 +160,7 @@ export default({ config, db }) => {
       if (err) {
         res.status(500).send(err);
       }
-      res.json(purchaseRequests);
+      res.status(200).json(purchaseRequests);
       });
     });
 
@@ -170,7 +170,7 @@ export default({ config, db }) => {
         if (err) {
           res.status(500).send(err);
         }
-        res.json(purchaseRequests);
+        res.status(200).json(purchaseRequests);
       });
     });
 
@@ -180,7 +180,7 @@ export default({ config, db }) => {
         if (err) {
           res.status(500).send(err);
         }
-        res.json(purchaseRequests);
+        res.status(200).json(purchaseRequests);
       });
     });
 
@@ -190,7 +190,7 @@ export default({ config, db }) => {
         if (err) {
           res.status(500).send(err);
         }
-        res.json(purchaseRequests);
+        res.status(200).json(purchaseRequests);
       });
     });
 

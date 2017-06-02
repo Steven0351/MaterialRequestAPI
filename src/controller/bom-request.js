@@ -17,9 +17,9 @@ export default({ config, db }) => {
     newBomRequest.dateRequested = `${today.getMonth()+1}-${today.getDate()}-${today.getFullYear()}`;
     newBomRequest.save(err => {
       if (err) {
-        res.send(err);
+        res.status(500).send(err);
       }
-      res.json({message: 'New BOM Request successfully saved'});
+      res.status(201).json({message: 'New BOM Request successfully saved'});
     });
   });
 
@@ -27,9 +27,9 @@ export default({ config, db }) => {
   api.post('/inventory-items/add/:id', authenticate, (req, res) => {
     BomRequest.findById(req.params.id, (err, bomRequest) => {
       if (err) {
-        res.send(err);
+        res.status(500).send(err);
       } else if (req.body.requestor != bomRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
-        res.json({message: 'You do not have permission to edit this BOM Request'});
+        res.status(403).json({message: 'You do not have permission to edit this BOM Request'});
       } else {
         let newSubcomponent = new InventoryItem();
         newSubcomponent.inventoryID = req.body.inventoryID;
@@ -37,14 +37,14 @@ export default({ config, db }) => {
         newSubcomponent.bomRequest = bomRequest._id;
         newSubcomponent.save((err, bomRequestSuccess) => {
           if (err) {
-            res.send(err);
+            res.status(500).send(err);
           }
           bomRequest.subcomponents.push(newSubcomponent);
           bomRequest.save((err) => {
             if (err) {
-              res.send(err);
+              res.status(500).send(err);
             }
-            res.json({message: 'Inventory Item successfully added to BOM request'});
+            res.status(200).json({message: 'Inventory Item successfully added to BOM request'});
           });
         });
       }
@@ -54,16 +54,16 @@ export default({ config, db }) => {
   api.put('/:id', authenticate, (req, res) => {
     BomRequest.findById(req.params.id, (err, bomRequest) => {
       if (err) {
-        res.send(err);
+        res.status(500).send(err);
       } else if (req.body.requestor != bomRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
-        res.json({message: 'You do not have permission to edit this request'});
+        res.status(403).json({message: 'You do not have permission to edit this request'});
       } else {
         bomRequest.proposedTopLevelID = req.body.proposedTopLevelID;
         bomRequest.save((err) => {
           if (err) {
-            res.send(err);
+            res.status(500).send(err);
           }
-          res.json({message: 'BOM Request Successfully Updated'});
+          res.status(200).json({message: 'BOM Request Successfully Updated'});
         });
       }
     });
@@ -73,25 +73,25 @@ export default({ config, db }) => {
   api.put('/inventory-items/:bomRequest/:id', authenticate, (req, res) => {
     BomRequest.findById(req.params.bomRequest, (err, bomRequest) => {
       if (err) {
-        res.send(err);
+        res.status(500).send(err);
       } else if (req.body.requestor != bomRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
-        res.json({message: 'You do not have permission to edit this request'});
+        res.status(403).json({message: 'You do not have permission to edit this request'});
       } else {
         InventoryItem.find({bomRequest: req.params.bomRequest}, (err, invetoryItems) => {
           if (err) {
-            res.send(err);
+            res.status(500).send(err);
           }
           InventoryItem.findById(req.params.id, (err, inventoryItem) => {
             if (err) {
-              res.send(err);
+              res.status(500).send(err);
             }
             inventoryItem.inventoryID = req.body.inventoryID;
             inventoryItem.quantity = req.body.quantity;
             inventoryItem.save((err) => {
               if (err) {
-                res.send(err);
+                res.status(500).send(err);
               }
-              res.json({message: 'Inventory Item successfully updated'});
+              res.status(200).json({message: 'Inventory Item successfully updated'});
             });
           });
         });
@@ -103,19 +103,19 @@ export default({ config, db }) => {
   api.delete('/inventory-items/:bomRequest/:id', authenticate, (req, res) => {
     BomRequest.findById(req.params.bomRequest, (err, bomRequest) => {
       if (err) {
-        res.send(err);
+        res.status(500).send(err);
       } else if (req.body.requestor != bomRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
-        res.json({message: 'You do not have permission to edit this request'});
+        res.status(403).json({message: 'You do not have permission to edit this request'});
       } else {
         InventoryItem.findByIdAndRemove(req.params.id, (err, inventoryItem) => {
           if (err) {
-            res.send(err);
+            res.status(500).send(err);
           }
           BomRequest.findOneAndUpdate({_id: req.params.bomRequest}, {$pull: {subcomponents: req.params.id}}, (err, bomRequest) => {
             if (err) {
-              res.send(err);
+              res.status(500).send(err);
             }
-            res.json({message: 'Inventory Item deleted and removed from BOM Request'});
+            res.status(200).json({message: 'Inventory Item deleted and removed from BOM Request'});
           });
         });
       }
@@ -126,19 +126,19 @@ export default({ config, db }) => {
   api.delete('/:id', authenticate, (req, res) => {
     BomRequest.findById(req.params.id, (err, bomRequest) => {
       if (err) {
-        res.send(err);
+        res.status(500).send(err);
       } else if (req.body.requestor != bomRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
-        res.json({message: 'You do not have permission to edit this request'});
+        res.status(403).json({message: 'You do not have permission to edit this request'});
       } else {
         bomRequest.remove((err) => {
           if (err) {
-            res.send(err);
+            res.status(500).send(err);
           }
           InventoryItem.remove({bomRequest: req.params.id}, (err, success) => {
             if (err) {
-              res.send(err);
+              res.status(500).send(err);
             }
-            res.json({message: 'BOM Request and subcomponents deleted from inventory-items DB'});
+            res.status(200).json({message: 'BOM Request and subcomponents deleted from inventory-items DB'});
           });
         });
       }
@@ -149,9 +149,9 @@ export default({ config, db }) => {
   api.get('/', authenticate, (req, res) => {
     BomRequest.find({}, (err, bomRequests) => {
       if (err) {
-        res.send(err);
+        res.status(500).send(err);
       }
-      res.json(bomRequests);
+      res.status(200).json(bomRequests);
     });
   });
   

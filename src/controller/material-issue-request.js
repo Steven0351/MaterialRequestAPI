@@ -18,9 +18,9 @@ export default({ config, db }) => {
 
     newMaterialIssueRequest.save(err => {
       if (err) {
-        res.send(err);
+        res.status(500).send(err);
       }
-      res.json({ message: 'Material Issue Request saved successfully'});
+      res.status(201).json({ message: 'Material Issue Request saved successfully'});
     });
   });
 
@@ -28,7 +28,7 @@ export default({ config, db }) => {
   api.post('/inventory-items/add/:id', authenticate, (req, res) => {
       MaterialIssueRequest.findById(req.params.id, (err, issueRequest) => {
         if (err) {
-          res.send(err);
+          res.status(500).send(err);
         }
         let itemToIssue = new InventoryItem();
 
@@ -37,12 +37,12 @@ export default({ config, db }) => {
         itemToIssue.materialIssueRequest = issueRequest._id;
         itemToIssue.save((err, toIssue) => {
           if (err) {
-            res.send(err);
+            res.status(500).send(err);
           }
           issueRequest.inventoryToBeIssued.push(itemToIssue);
           issueRequest.save((err) => {
             if (err) {
-              res.send(err);
+              res.status(500).send(err);
             }
             res.json({message: 'Inventory Item successfully added to material issue request'});
           });
@@ -54,20 +54,21 @@ export default({ config, db }) => {
   api.put('/:id', authenticate, (req, res) => {
     MaterialIssueRequest.findById(req.params.id, (err, materialIssueRequest) => {
       if (err) {
-        res.send(err);
-      } else if (req.body.requestor != purchaseRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
-        res.json({message: 'You do not have permission to edit this request'});
+        res.status(500).send(err);
+      } else if (req.body.requestor != materialIssueRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+        res.status(403).json({message: 'You do not have permission to edit this request'});
         return;
+      } else {
+        materialIssueRequest.inventoryToBeIssued = req.body.inventoryToBeIssued;
+        materialIssueRequest.workOrder = req.body.workOrder;
+        materialIssueRequest.requestor = req.body.requestor;
+        materialIssueRequest.save((err) => {
+          if (err) {
+            res.status(500).send(err);
+          }
+          res.json({message: 'Material issue request successfully updated'});
+        });
       }
-      materialIssueRequest.inventoryToBeIssued = req.body.inventoryToBeIssued;
-      materialIssueRequest.workOrder = req.body.workOrder;
-      materialIssueRequest.requestor = req.body.requestor;
-      materialIssueRequest.save((err) => {
-        if (err) {
-          res.send(err);
-        }
-        res.json({message: 'Material issue request successfully updated'});
-      });
     });
   });
 
@@ -79,22 +80,23 @@ export default({ config, db }) => {
       } else if (materialIssueRequest == null) {
         res.status(404).send('Material issue request not found');
       } else if (req.body.requestor != materialIssueRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
-        res.json({message: 'You do not have permission to delete this request'});
+        res.status(403).json({message: 'You do not have permission to delete this request'});
         return;
-      }
-      MaterialIssueRequest.remove({_id: req.params.id}, (err, materialIssueRequest) => {
-        if (err) {
-          res.status(500).send(err);
-          return;
-        }
-        InventoryItem.remove({materialIssueRequest: req.params.id}, (err, inventoryItem) => {
+      } else {
+        MaterialIssueRequest.remove({_id: req.params.id}, (err, materialIssueRequest) => {
           if (err) {
             res.status(500).send(err);
             return;
           }
-          res.json({message: 'Successfully deleted material issue request'});
+          InventoryItem.remove({materialIssueRequest: req.params.id}, (err, inventoryItem) => {
+            if (err) {
+              res.status(500).send(err);
+              return;
+            }
+            res.status(200).json({message: 'Successfully deleted material issue request'});
+          });
         });
-      });
+      }
     });
   });
 
@@ -102,9 +104,9 @@ export default({ config, db }) => {
   api.get('/', authenticate, (req, res) => {
     MaterialIssueRequest.find({}, (err, materialIssueRequests) => {
       if (err) {
-        res.send(err);
+        res.status(500).send(err);
       }
-      res.json(materialIssueRequests);
+      res.status(200).json(materialIssueRequests);
     });
   });
 
