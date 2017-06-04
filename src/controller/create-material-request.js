@@ -28,7 +28,7 @@ export default({ config, db }) => {
     CreateMaterialRequest.findById(req.params.id, (err, createMaterialRequest) => {
       if (err) {
         res.status(500).send(err);
-      } else if (req.body.requestor != createMaterialRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+      } else if (req.body.requestor != createMaterialRequest.requestor || req.body.role != 'admin') {
         res.status(403).json({message: 'You do not have permission to edit this request'});
         return;
       } else {
@@ -48,7 +48,7 @@ export default({ config, db }) => {
     CreateMaterialRequest.findById(req.params.id, (err, createMaterialRequest) => {
       if (err) {
         res.status(500).send(err);
-      } else if (req.body.requestor != createMaterialRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+      } else if (req.body.requestor != createMaterialRequest.requestor || req.body.role != 'admin') {
         res.status(403).json({message: 'You do not have permission to edit this request'});
         return;
       } else {

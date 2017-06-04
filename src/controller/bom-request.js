@@ -28,7 +28,7 @@ export default({ config, db }) => {
     BomRequest.findById(req.params.id, (err, bomRequest) => {
       if (err) {
         res.status(500).send(err);
-      } else if (req.body.requestor != bomRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+      } else if (req.body.requestor != bomRequest.requestor || req.body.role != 'admin') {
         res.status(403).json({message: 'You do not have permission to edit this BOM Request'});
       } else {
         let newSubcomponent = new InventoryItem();
@@ -55,7 +55,7 @@ export default({ config, db }) => {
     BomRequest.findById(req.params.id, (err, bomRequest) => {
       if (err) {
         res.status(500).send(err);
-      } else if (req.body.requestor != bomRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+      } else if (req.body.requestor != bomRequest.requestor || req.body.role != 'admin') {
         res.status(403).json({message: 'You do not have permission to edit this request'});
       } else {
         bomRequest.proposedTopLevelID = req.body.proposedTopLevelID;
@@ -74,7 +74,7 @@ export default({ config, db }) => {
     BomRequest.findById(req.params.bomRequest, (err, bomRequest) => {
       if (err) {
         res.status(500).send(err);
-      } else if (req.body.requestor != bomRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+      } else if (req.body.requestor != bomRequest.requestor || req.body.role != 'admin') {
         res.status(403).json({message: 'You do not have permission to edit this request'});
       } else {
         InventoryItem.find({bomRequest: req.params.bomRequest}, (err, invetoryItems) => {
@@ -104,7 +104,7 @@ export default({ config, db }) => {
     BomRequest.findById(req.params.bomRequest, (err, bomRequest) => {
       if (err) {
         res.status(500).send(err);
-      } else if (req.body.requestor != bomRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+      } else if (req.body.requestor != bomRequest.requestor || req.body.role != 'admin') {
         res.status(403).json({message: 'You do not have permission to edit this request'});
       } else {
         InventoryItem.findByIdAndRemove(req.params.id, (err, inventoryItem) => {
@@ -127,7 +127,7 @@ export default({ config, db }) => {
     BomRequest.findById(req.params.id, (err, bomRequest) => {
       if (err) {
         res.status(500).send(err);
-      } else if (req.body.requestor != bomRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+      } else if (req.body.requestor != bomRequest.requestor || req.body.role != 'admin') {
         res.status(403).json({message: 'You do not have permission to edit this request'});
       } else {
         bomRequest.remove((err) => {

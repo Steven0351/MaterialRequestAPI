@@ -27,7 +27,7 @@ export default({ config, db}) => {
     CycleCountRequest.findById(req.params.id, (err, cycleCountRequest) => {
       if (err) {
         res.status(500).send(err);
-      } else if (req.body.requestor != cycleCountRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+      } else if (req.body.requestor != cycleCountRequest.requestor || req.body.role != 'admin') {
         res.status(403).json({message: 'You do not have permission to edit this Cycle Count Request'});
       } else {
         let newCountRequest = new InventoryItem();
@@ -55,7 +55,7 @@ export default({ config, db}) => {
     CycleCountRequest.findById(req.params.id, (err, cycleCountRequest) => {
       if (err) {
         res.status(500).send(err);
-      } else if (req.body.requestor != cycleCountRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+      } else if (req.body.requestor != cycleCountRequest.requestor || req.body.role != 'admin') {
         res.status(403).json({message: 'You do not have permission to edit this Cycle Count Request'});
       } else {
         InventoryItem.findById(req.params.inventoryItem, (err, inventoryItem) => {
@@ -77,7 +77,7 @@ export default({ config, db}) => {
     CycleCountRequest.findById(req.params.id, (err, cycleCountRequest) => {
       if (err) {
         res.status(500).send(err);
-      } else if (req.body.requestor != cycleCountRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+      } else if (req.body.requestor != cycleCountRequest.requestor || req.body.role != 'admin') {
         res.status(403).json({message: 'You do not have permission to edit this Cycle Count Request'});
       } else {
         cycleCountRequest.remove((err) => {
@@ -100,7 +100,7 @@ export default({ config, db}) => {
     CycleCountRequest.findById(req.params.cycleCount, (err, cycleCountRequest) => {
       if (err) {
         res.status(500).send(err);
-      } else if (req.body.requestor != cycleCountRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+      } else if (req.body.requestor != cycleCountRequest.requestor || req.body.role != 'admin') {
         res.status(403).json({message: 'You do not have permission to edit this Cycle Count Request'});
       } else {
         InventoryItem.findByIdAndRemove(req.params.id, (err) => {

@@ -29,24 +29,28 @@ export default({ config, db }) => {
       MaterialIssueRequest.findById(req.params.id, (err, issueRequest) => {
         if (err) {
           res.status(500).send(err);
-        }
-        let itemToIssue = new InventoryItem();
+        } else if (req.body.requestor != materialIssueRequest.requestor || req.body.role != 'admin') {
+          res.status(403).json({message: 'You do not have permission to edit this request'});
+          return;
+        } else {
+          let itemToIssue = new InventoryItem();
 
-        itemToIssue.inventoryToBeIssued = req.body.inventoryToBeIssued;
-        itemToIssue.quantity = req.body.quantity;
-        itemToIssue.materialIssueRequest = issueRequest._id;
-        itemToIssue.save((err, toIssue) => {
-          if (err) {
-            res.status(500).send(err);
-          }
-          issueRequest.inventoryToBeIssued.push(itemToIssue);
-          issueRequest.save((err) => {
+          itemToIssue.inventoryToBeIssued = req.body.inventoryToBeIssued;
+          itemToIssue.quantity = req.body.quantity;
+          itemToIssue.materialIssueRequest = issueRequest._id;
+          itemToIssue.save((err, toIssue) => {
             if (err) {
               res.status(500).send(err);
             }
-            res.json({message: 'Inventory Item successfully added to material issue request'});
+            issueRequest.inventoryToBeIssued.push(itemToIssue);
+            issueRequest.save((err) => {
+              if (err) {
+                res.status(500).send(err);
+              }
+              res.json({message: 'Inventory Item successfully added to material issue request'});
+            });
           });
-        });
+        }
       });
     });
 
@@ -55,7 +59,7 @@ export default({ config, db }) => {
     MaterialIssueRequest.findById(req.params.id, (err, materialIssueRequest) => {
       if (err) {
         res.status(500).send(err);
-      } else if (req.body.requestor != materialIssueRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+      } else if (req.body.requestor != materialIssueRequest.requestor || req.body.role != 'admin') {
         res.status(403).json({message: 'You do not have permission to edit this request'});
         return;
       } else {
@@ -79,7 +83,7 @@ export default({ config, db }) => {
         res.status(500).send(err);
       } else if (materialIssueRequest == null) {
         res.status(404).send('Material issue request not found');
-      } else if (req.body.requestor != materialIssueRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+      } else if (req.body.requestor != materialIssueRequest.requestor || req.body.role != 'admin') {
         res.status(403).json({message: 'You do not have permission to delete this request'});
         return;
       } else {

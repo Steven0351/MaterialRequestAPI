@@ -33,7 +33,7 @@ export default({ config, db }) => {
     PurchaseRequest.findById(req.params.id, (err, purchaseRequest) => {
       if (err) {
         res.status(500).send(err);
-      } else if (req.body.requestor != purchaseRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+      } else if (req.body.requestor != purchaseRequest.requestor || req.body.role != 'admin') {
         res.status(403).json({message: 'You do not have permission to edit this request'});
         return;
       } else {
@@ -62,7 +62,7 @@ export default({ config, db }) => {
     PurchaseRequest.findById(req.params.id, (err, purchaseRequest) => {
       if (err) {
         res.status(500).send(err);
-      } else if (req.body.requestor != purchaseRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+      } else if (req.body.requestor != purchaseRequest.requestor || req.body.role != 'admin') {
         res.status(403).json({message: 'You do not have permission to edit this request'});
         return;
       } else {
@@ -87,7 +87,7 @@ export default({ config, db }) => {
     PurchaseRequest.findById(req.params.purchaseRequest, (err, purchaseRequest) => {
       if (err) {
         res.status(500).send(err);
-      } else if (req.body.requestor != purchaseRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+      } else if (req.body.requestor != purchaseRequest.requestor || req.body.role != 'admin') {
         res.status(403).json({message: 'You do not have permission to edit this request'});
         return;
       } else {
@@ -112,7 +112,7 @@ export default({ config, db }) => {
         res.status(500).send(err);
       } else if (purchaseRequest == null) {
         res.status(404).send('Purchase request not found');
-      } else if (req.body.requestor != purchaseRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+      } else if (req.body.requestor != purchaseRequest.requestor || req.body.role != 'admin') {
         res.status(403).json({message: 'You do not have permission to delete this request'});
       } else {
         PurchaseRequest.remove({_id: req.params.id}, (err, purchaseRequest) => {
@@ -136,7 +136,7 @@ export default({ config, db }) => {
     PurchaseRequest.findById(req.params.id, (err, purchaseRequest) => {
       if (err) {
         res.status(500).send(err);
-      } else if (req.body.requestor != purchaseRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+      } else if (req.body.requestor != purchaseRequest.requestor || req.body.role != 'admin') {
         res.status(403).json({message: 'You do not have permission to edit this request'});
       } else {
         InventoryItem.findByIdAndRemove(req.params.lineItem, (err, inventoryItem) => {

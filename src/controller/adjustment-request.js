@@ -28,7 +28,7 @@ export default({ config, db }) => {
 		AdjustmentRequest.findById(req.params.id, (err, adjustmentRequest) => {
 			if (err) {
 				res.status(500).send(err);
-			} else if (req.body.requestor != adjustmentRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+			} else if (req.body.requestor != adjustmentRequest.requestor || req.body.role != 'admin') {
 				res.status(403).json({message: 'You do not have permission to edit this Adjustment Request'});
 			} else {
 				let newItemToAdjust = new InventoryItem();
@@ -56,7 +56,7 @@ export default({ config, db }) => {
 		AdjustmentRequest.findById(req.params.id, (err, adjustmentRequest) => {
 			if (err) {
 				res.status(500).send(err);
-			} else if (req.body.requestor != adjustmentRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+			} else if (req.body.requestor != adjustmentRequest.requestor || req.body.role != 'admin') {
 				res.status(403).json({message: 'You do not have permission to edit this Adjustment Request'});
 			} else {
 				adjustmentRequest.reason = req.body.reason;
@@ -75,7 +75,7 @@ export default({ config, db }) => {
 		AdjustmentRequest.findById(req.params.id, (err, adjustmentRequest) => {
 			if (err) {
 				res.status(500).send(err);
-			} else if (req.body.requestor != adjustmentRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+			} else if (req.body.requestor != adjustmentRequest.requestor || req.body.role != 'admin') {
 				res.status(403).json({message: 'You do not have permission to edit this Adjustment Request'});
 			} else {
 				InventoryItem.findById(req.params.id, (err, itemToAdjust) => {
@@ -100,7 +100,7 @@ export default({ config, db }) => {
 		AdjustmentRequest.findById(req.params.adjustmentRequest, (err, adjustmentRequest) => {
 			if (err) {
 				res.status(500).send(err);
-			} else if (req.body.requestor != adjustmentRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+			} else if (req.body.requestor != adjustmentRequest.requestor || req.body.role != 'admin') {
 				res.status(403).json({message: 'You do not have permission to edit this Adjustment Request'});
 			} else {
 				InventoryItem.findByIdAndRemove(req.params.id, (err, itemToAdjust) => {
@@ -124,7 +124,7 @@ export default({ config, db }) => {
 		AdjustmentRequest.findById(req.params.id, (err, adjustmentRequest) => {
 			if (err) {
 				res.status(500).send(err);
-			} else if (req.body.requestor != adjustmentRequest.requestor || req.body.requestor != '5920befd422aeb963bf0fee0') {
+			} else if (req.body.requestor != adjustmentRequest.requestor || req.body.role != 'admin') {
 				res.status(403).json({message: 'You do not have permission to edit this Adjustment Request'});
 			} else {
 				adjustmentRequest.remove((err) => {
