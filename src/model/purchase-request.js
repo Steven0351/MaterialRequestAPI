@@ -8,6 +8,7 @@ let PurchaseRequestSchema = new Schema({
     itemsToBePurchased: [{type: Schema.Types.ObjectId, ref: 'InventoryItem'}],
     shippingMethod: String,
     isHot: Boolean,
+    isDropShip: Boolean,
     orderHasBeenApproved: Boolean,
     orderHasBeenPlaced: Boolean,
     orderAcknowledgementReceived: Boolean,
