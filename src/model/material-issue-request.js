@@ -13,6 +13,7 @@ let MaterialIssueRequestSchema = new Schema({
     ref: 'User',
     required: true
   },
+  isComplete: Boolean,
   dateRequested: String
 });
 

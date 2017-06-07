@@ -14,6 +14,7 @@ export default({ config, db }) => {
     newMaterialIssueRequest.inventoryToBeIssued = req.body.inventoryToBeIssued;
     newMaterialIssueRequest.workOrder = req.body.workOrder;
     newMaterialIssueRequest.requestor = req.body.requestor;
+    newMaterialIssueRequest.isComplete = req.body.isComplete || true;
     newMaterialIssueRequest.dateRequested = `${today.getMonth()+1}-${today.getDate()}-${today.getFullYear()}`;
 
     newMaterialIssueRequest.save(err => {
@@ -66,6 +67,7 @@ export default({ config, db }) => {
         materialIssueRequest.inventoryToBeIssued = req.body.inventoryToBeIssued;
         materialIssueRequest.workOrder = req.body.workOrder;
         materialIssueRequest.requestor = req.body.requestor;
+        materialIssueRequest.isComplete = req.body.isComplete;
         materialIssueRequest.save((err) => {
           if (err) {
             res.status(500).send(err);
