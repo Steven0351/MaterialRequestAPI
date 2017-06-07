@@ -3,6 +3,7 @@ import BomRequest from './bom-request';
 import CycleCountRequest from './cycle-count-request';
 import PurchaseRequest from './purchase-request';
 import MaterialIssueRequest from './material-issue-request'
+import ReceivingIssue from './receiving-issue';
 let Schema = mongoose.Schema;
 
 let InventoryItemSchema = new Schema({
@@ -28,6 +29,10 @@ let InventoryItemSchema = new Schema({
   adjustmentRequest: {
     type: Schema.Types.ObjectId,
     ref: 'AdjustmentRequest'
+  },
+  receivingIssue: {
+    type: Schema.Types.ObjectId,
+    ref: 'ReceivingIssue'
   }
 });
 
