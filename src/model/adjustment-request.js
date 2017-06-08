@@ -5,7 +5,7 @@ import InventoryItem from './inventory-item';
 let Schema = mongoose.Schema;
 
 let AdjustmentRequestSchema = new Schema({
-  itemsToAdjust: [{type: Schema.Types.ObjectId, ref: 'InventoryItem'}],
+  inventoryItems: [{type: Schema.Types.ObjectId, ref: 'InventoryItem'}],
   reason: String,
   requestor: {
     type: Schema.Types.ObjectId,

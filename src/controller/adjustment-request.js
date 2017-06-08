@@ -39,7 +39,7 @@ export default({ config, db }) => {
 					if (err) {
 						res.status(500).send(err);
 					}
-					adjustmentRequest.itemsToAdjust.push(newItemToAdjust);
+					adjustmentRequest.inventoryItems.push(newItemToAdjust);
 					adjustmentRequest.save((err) => {
 						if (err) {
 							res.status(500).send(err);

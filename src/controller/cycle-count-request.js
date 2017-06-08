@@ -38,7 +38,7 @@ export default({ config, db}) => {
           if (err) {
             res.status(500).send(err);
           }
-          cycleCountRequest.countRequests.push(newCountRequest);
+          cycleCountRequest.inventoryItems.push(newCountRequest);
           cycleCountRequest.save((err) => {
             if (err) {
               res.status(500).send(err);

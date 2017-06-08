@@ -11,7 +11,6 @@ export default({ config, db }) => {
   // 'v1/material-issue-request/add - Create
   api.post('/add', authenticate, (req, res) => {
     let newMaterialIssueRequest = new MaterialIssueRequest();
-    newMaterialIssueRequest.inventoryToBeIssued = req.body.inventoryToBeIssued;
     newMaterialIssueRequest.workOrder = req.body.workOrder;
     newMaterialIssueRequest.requestor = req.body.requestor;
     newMaterialIssueRequest.isComplete = req.body.isComplete || true;
@@ -36,14 +35,13 @@ export default({ config, db }) => {
         } else {
           let itemToIssue = new InventoryItem();
 
-          itemToIssue.inventoryToBeIssued = req.body.inventoryToBeIssued;
           itemToIssue.quantity = req.body.quantity;
           itemToIssue.materialIssueRequest = issueRequest._id;
           itemToIssue.save((err, toIssue) => {
             if (err) {
               res.status(500).send(err);
             }
-            issueRequest.inventoryToBeIssued.push(itemToIssue);
+            issueRequest.inventoryItems.push(itemToIssue);
             issueRequest.save((err) => {
               if (err) {
                 res.status(500).send(err);
@@ -64,7 +62,6 @@ export default({ config, db }) => {
         res.status(403).json({message: 'You do not have permission to edit this request'});
         return;
       } else {
-        materialIssueRequest.inventoryToBeIssued = req.body.inventoryToBeIssued;
         materialIssueRequest.workOrder = req.body.workOrder;
         materialIssueRequest.requestor = req.body.requestor;
         materialIssueRequest.isComplete = req.body.isComplete;

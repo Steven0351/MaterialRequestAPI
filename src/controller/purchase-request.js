@@ -46,7 +46,7 @@ export default({ config, db }) => {
           if (err) {
             res.status(500).send(err);
           }
-          purchaseRequest.itemsToBePurchased.push(itemToPurchase);
+          purchaseRequest.inventoryItems.push(itemToPurchase);
           purchaseRequest.save((err) => {
             if (err) {
               res.status(500).send(err);
@@ -67,7 +67,6 @@ export default({ config, db }) => {
         res.status(403).json({message: 'You do not have permission to edit this request'});
         return;
       } else {
-        purchaseRequest.itemsToBePurchased = req.body.itemsToBePurchased;
         purchaseRequest.shippingMethod = req.body.shippingMethod;
         purchaseRequest.isHot = req.body.isHot;
         purchaseRequest.isDropShip = req.body.isDropShip;
@@ -145,7 +144,7 @@ export default({ config, db }) => {
           if (err) {
             res.status(500).send(err);
           }
-          PurchaseRequest.findByIdAndUpdate(req.params.id, {$pull: {itemsToBePurchased: req.params.lineItem}}, (err, purchaseRequest) => {
+          PurchaseRequest.findByIdAndUpdate(req.params.id, {$pull: {inventoryItems: req.params.lineItem}}, (err, purchaseRequest) => {
             if (err) {
               res.status(500).send(err)
             }
