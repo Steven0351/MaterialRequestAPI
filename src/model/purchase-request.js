@@ -5,7 +5,7 @@ let Schema = mongoose.Schema;
 
 // TODO - Figure out how to utilize storage and CRUD attachments for attached GDT-MFG PO's and Customer PO's
 let PurchaseRequestSchema = new Schema({
-    itemsToBePurchased: [{type: Schema.Types.ObjectId, ref: 'InventoryItem'}],
+    inventoryItems: [{type: Schema.Types.ObjectId, ref: 'InventoryItem'}],
     shippingMethod: String,
     isHot: Boolean,
     isDropShip: Boolean,
