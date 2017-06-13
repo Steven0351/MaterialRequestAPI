@@ -39,7 +39,7 @@ export default({ config, db }) => {
           if (err) {
             res.status(500).send(err);
           }
-          bomRequest.subcomponents.push(newSubcomponent);
+          bomRequest.inventoryItems.push(newSubcomponent);
           bomRequest.save((err) => {
             if (err) {
               res.status(500).send(err);

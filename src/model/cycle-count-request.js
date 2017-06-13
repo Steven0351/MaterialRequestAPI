@@ -4,7 +4,7 @@ import InventoryItem from './inventory-item';
 let Schema = mongoose.Schema;
 
 let CycleCountRequestSchema = new Schema({
-  countRequests: [{type: Schema.Types.ObjectId, ref: 'InventoryItem'}],
+  inventoryItems: [{type: Schema.Types.ObjectId, ref: 'InventoryItem'}],
   requestor: {
     type: Schema.Types.ObjectId,
     ref: 'User',

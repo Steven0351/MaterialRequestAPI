@@ -14,6 +14,7 @@ export default({ config, db }) => {
     let newPurchaseRequest = new PurchaseRequest();
     newPurchaseRequest.shippingMethod = req.body.shippingMethod;
     newPurchaseRequest.isHot = req.body.isHot || false;
+    newPurchaseRequest.isDropShip = req.body.isHot || false;
     purchaseRequest.orderHasBeenPlaced = req.body.orderHasBeenPlaced || false;
     purchaseRequest.orderAcknowledgementReceived = req.body.orderAcknowledgementReceived || false;
     purchaseRequest.trackingInformation = req.body.trackingInformation || 'No tracking available';
@@ -45,7 +46,7 @@ export default({ config, db }) => {
           if (err) {
             res.status(500).send(err);
           }
-          purchaseRequest.itemsToBePurchased.push(itemToPurchase);
+          purchaseRequest.inventoryItems.push(itemToPurchase);
           purchaseRequest.save((err) => {
             if (err) {
               res.status(500).send(err);
@@ -66,9 +67,9 @@ export default({ config, db }) => {
         res.status(403).json({message: 'You do not have permission to edit this request'});
         return;
       } else {
-        purchaseRequest.itemsToBePurchased = req.body.itemsToBePurchased;
         purchaseRequest.shippingMethod = req.body.shippingMethod;
         purchaseRequest.isHot = req.body.isHot;
+        purchaseRequest.isDropShip = req.body.isDropShip;
         purchaseRequest.orderHasBeenPlaced = req.body.orderHasBeenPlaced;
         purchaseRequest.orderAcknowledgementReceived = req.body.orderAcknowledgementReceived;
         purchaseRequest.trackingInformation = req.body.trackingInformation;
@@ -143,7 +144,7 @@ export default({ config, db }) => {
           if (err) {
             res.status(500).send(err);
           }
-          PurchaseRequest.findByIdAndUpdate(req.params.id, {$pull: {itemsToBePurchased: req.params.lineItem}}, (err, purchaseRequest) => {
+          PurchaseRequest.findByIdAndUpdate(req.params.id, {$pull: {inventoryItems: req.params.lineItem}}, (err, purchaseRequest) => {
             if (err) {
               res.status(500).send(err)
             }
