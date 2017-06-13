@@ -4,7 +4,7 @@ import PurchaseRequest from './purchase-request';
 let Schema = mongoose.Schema;
 
 let CreateMaterialRequestSchema = new Schema({
-  manufactuerSKU: {
+  manufacturerSKU: {
     type: String,
     required: true
   },

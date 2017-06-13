@@ -16,11 +16,12 @@ export default({ config, db }) => {
     newCreateMaterialRequest.purchaseRequest = req.body.purchaseRequest;
     newCreateMaterialRequest.requestor = req.body.requestor;
     newCreateMaterialRequest.dateRequested = `${today.getMonth()+1}-${today.getDate()}-${today.getFullYear()}`;
-    newCreateMaterialRequest.save(err => {
+    newCreateMaterialRequest.save((err) => {
       if (err) {
         res.status(500).send(err);
+      } else {
+        res.status(201).json({message: 'New Create Material Request successfully saved'});
       }
-      res.status(201).json({message: 'New Create Material Request successfully saved'});
     });
   });
 
