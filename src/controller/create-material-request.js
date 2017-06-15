@@ -26,23 +26,26 @@ export default({ config, db }) => {
   });
 
   api.put('/:id', authenticate, (req, res) => {
-    CreateMaterialRequest.findOne({'_id': req.params.id, 'requestor': req.body.requestor}, (err, createMaterialRequest) => {
+    CreateMaterialRequest.findOneAndUpdate({'_id': req.params.id, 'requestor': req.body.requestor}, 
+        {$set: {manufacturerSKU: req.body.manufacturerSKU, description: req.body.description}}, 
+        (err, createMaterialRequest) => {
       if (err) {
-        res.status(500).send(err);
-     /* } else if (req.body.requestor != createMaterialRequest.requestor || req.body.role != 'admin') {
-        res.status(403).json({message: 'You do not have permission to edit this request'});
-        return;*/
+        if (req.body.role == 'admin') {
+          CreateMaterialRequest.findByIdAndUpdate(req.params.id, {$set: {manufacturerSKU: req.body.manufacturerSKU,
+              description: req.body.description}}, (err, createMaterialRequest) => {
+                if (err) {
+                  res.status(500).send(err);
+                } else {
+                  res.status(200).json({message: 'Create Material Request successfully updated by admin'});
+                }
+              });
+        } else {
+          res.status(404).send(err);
+        }
       } else {
-        createMaterialRequest.manufacturerSKU = req.body.manufacturerSKU;
-        createMaterialRequest.description = req.body.description;
-        createMaterialRequest.save((err) => {
-          if (err) {
-            res.status(500).send(err);
-          }
-          res.status(200).json({message: 'Create Material Request successfully update'});
-        });
+        res.status(200).json({message: 'Create Material Request successfully updated by requestor'});
       }
-    });
+    });    
   });
 
   api.delete('/:id', authenticate, (req, res) => {
