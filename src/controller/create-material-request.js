@@ -26,12 +26,12 @@ export default({ config, db }) => {
   });
 
   api.put('/:id', authenticate, (req, res) => {
-    CreateMaterialRequest.findById(req.params.id, (err, createMaterialRequest) => {
+    CreateMaterialRequest.findOne({'_id': req.params.id, 'requestor': req.body.requestor}, (err, createMaterialRequest) => {
       if (err) {
         res.status(500).send(err);
-      } else if (req.body.requestor != createMaterialRequest.requestor || req.body.role != 'admin') {
+     /* } else if (req.body.requestor != createMaterialRequest.requestor || req.body.role != 'admin') {
         res.status(403).json({message: 'You do not have permission to edit this request'});
-        return;
+        return;*/
       } else {
         createMaterialRequest.manufacturerSKU = req.body.manufacturerSKU;
         createMaterialRequest.description = req.body.description;

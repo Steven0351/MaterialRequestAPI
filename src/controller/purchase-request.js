@@ -60,12 +60,12 @@ export default({ config, db }) => {
 
   // 'v1/purchase-request/:id - Update purchase request
   api.put('/:id', authenticate, (req, res) => {
-    PurchaseRequest.findById(req.params.id, (err, purchaseRequest) => {
+    PurchaseRequest.findOne({'_id': req.params.id, 'requestor': req.body.requestor}, (err, purchaseRequest) => {
       if (err) {
         res.status(500).send(err);
-      } else if (req.body.requestor != purchaseRequest.requestor || req.body.role != 'admin') {
-        res.status(403).json({message: 'You do not have permission to edit this request'});
-        return;
+     /* } else if (req.body.requestor != purchaseRequest.requestor._id.toString() || req.body.role != 'admin') {
+        res.status(403).json({message: 'You do not have permission to edit this request ' + purchaseRequest.requestor._id.toString()});
+        return; */
       } else {
         purchaseRequest.shippingMethod = req.body.shippingMethod;
         purchaseRequest.isHot = req.body.isHot;
