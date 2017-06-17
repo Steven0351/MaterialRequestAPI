@@ -25,11 +25,31 @@ export default({ config, db }) => {
 
   // 'v1/bom-request/inventory-items/add/:id - add subcomponents to BomRequest 
   api.post('/inventory-items/add/:id', authenticate, (req, res) => {
-    BomRequest.findById(req.params.id, (err, bomRequest) => {
+    BomRequest.findOne({'_id': req.params.id, 'requestor': req.body.requestor},
+         (err, bomRequest) => {
       if (err) {
-        res.status(500).send(err);
-      } else if (req.body.requestor != bomRequest.requestor || req.body.role != 'admin') {
-        res.status(403).json({message: 'You do not have permission to edit this BOM Request'});
+        if (req.body.role == 'admin') {
+          BomRequest.findById(req.params.id, (err, bomRequest) => {
+            let newSubcomponent = new InventoryItem();
+            newSubcomponent.inventoryID = req.body.inventoryID;
+            newSubcomponent.quantity = req.body.quantity;
+            newSubcomponent.bomRequest = bomRequest._id;
+            newSubcomponent.save((err, bomRequestSuccess) => {
+              if (err) {
+                res.status(500).send(err);
+              } else {
+                bomRequest.inventoryItems.push(newSubcomponent);
+                bomRequest.save((err) => {
+                  if (err) {
+                    res.status(500).send(err);
+                  }
+                });
+              }
+            });
+          });
+        } else {
+          res.status(404).json({error: err});
+        }
       } else {
         let newSubcomponent = new InventoryItem();
         newSubcomponent.inventoryID = req.body.inventoryID;

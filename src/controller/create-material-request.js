@@ -40,7 +40,7 @@ export default({ config, db }) => {
                 }
               });
         } else {
-          res.status(404).send(err);
+          res.status(404).json({error: err});
         }
       } else {
         res.status(200).json({message: 'Create Material Request successfully updated by requestor'});
@@ -49,19 +49,22 @@ export default({ config, db }) => {
   });
 
   api.delete('/:id', authenticate, (req, res) => {
-    CreateMaterialRequest.findById(req.params.id, (err, createMaterialRequest) => {
+    CreateMaterialRequest.findOneAndRemove({'_id': req.params.id, 'requestor': req.body.requestor}, 
+        (err) => {
       if (err) {
-        res.status(500).send(err);
-      } else if (req.body.requestor != createMaterialRequest.requestor || req.body.role != 'admin') {
-        res.status(403).json({message: 'You do not have permission to edit this request'});
-        return;
+        if (req.body.role == 'admin') {
+          CreateMaterialRequest.findByIdAndRemove(req.params.id, (err) => {
+            if (err) {
+              res.status.send(err);
+            } else {
+              res.status(200).json({message: 'Create Material Request deleted by admin'});
+            }
+          });
+        } else {
+          res.status(404).json({error: err});
+        }
       } else {
-        createMaterialRequest.remove((err) => {
-          if (err) {
-            res.status(500).send(err);
-          }
-          res.status(200).json({message: 'Create Material Request successfully deleted'});
-        });
+        res.status(200).json({message: 'Create Material Request deleted by user'});
       }
     });
   });
