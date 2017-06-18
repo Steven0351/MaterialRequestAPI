@@ -24,8 +24,9 @@ export default({ config, db }) => {
     newPurchaseRequest.save((err) => {
       if (err) {
         res.status(500).send(err);
-        }
+      } else {
         res.status(201).json({ message: 'Purchase Request saved successfully'});
+      }
     });
   });
 

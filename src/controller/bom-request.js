@@ -25,7 +25,7 @@ export default({ config, db }) => {
 
   // 'v1/bom-request/inventory-items/add/:id - add subcomponents to BomRequest 
   api.post('/inventory-items/add/:id', authenticate, (req, res) => {
-    BomRequest.findOne({'_id': req.params.id, 'requestor': req.body.requestor},
+    BomRequest.findOne({_id: req.params.id, requestor: req.body.requestor},
          (err, bomRequest) => {
       if (err) {
         if (req.body.role == 'admin') {
@@ -72,71 +72,86 @@ export default({ config, db }) => {
   });
 
   api.put('/:id', authenticate, (req, res) => {
-    BomRequest.findById(req.params.id, (err, bomRequest) => {
+    BomRequest.findOneAndUpdate({_id: req.params.id, requestor: req.body.requestor},
+        {$set: {proposedTopLevelID: req.body.proposedTopLevelID}}, (err, bomRequest) => {
       if (err) {
-        res.status(500).send(err);
-      } else if (req.body.requestor != bomRequest.requestor || req.body.role != 'admin') {
-        res.status(403).json({message: 'You do not have permission to edit this request'});
+        if (req.body.role == 'admin') {
+          BomRequest.findByIdAndUpdate(req.params.id,
+              {$set: {proposedTopLevelID: req.body.proposedTopLevelID }}, (err, bomRequest) => {
+                if (err) {
+                  res.status(500).send(err);
+                } else {
+                  res.status(200).json({message: 'BOM Request successfully changed by admin'});
+                }
+              });
+        } else {
+          res.status(404).json({error: err});
+        }
       } else {
-        bomRequest.proposedTopLevelID = req.body.proposedTopLevelID;
-        bomRequest.save((err) => {
-          if (err) {
-            res.status(500).send(err);
-          }
-          res.status(200).json({message: 'BOM Request Successfully Updated'});
-        });
+        res.status(200).json({message: 'BOM Request Successfully Updated'});
       }
     });
   });
 
   // 'v1/bom-request/inventory-items/:bomRequest/:inventoryID - Update Inventory Item
   api.put('/inventory-items/:bomRequest/:id', authenticate, (req, res) => {
-    BomRequest.findById(req.params.bomRequest, (err, bomRequest) => {
+    BomRequest.findOne({_id: req.params.bomRequest, requestor: req.body.requestor},
+         (err, bomRequest) => {
       if (err) {
-        res.status(500).send(err);
-      } else if (req.body.requestor != bomRequest.requestor || req.body.role != 'admin') {
-        res.status(403).json({message: 'You do not have permission to edit this request'});
+        if (req.body.role == 'admin') {
+          InventoryItem.findByIdAndUpdate(req.params.id, {$set: {inventoryID: req.body.inventoryID,
+              quantity: req.body.quantity}}, (err, inventoryItem) => {
+                if (err) {
+                  res.status(500).send(err);
+                } else {
+                  res.status(200).json({message: 'Inventory item successfully updated by admin'})
+                }
+              });
+        } else {
+          res.status(404).json({error: err});
+        }
       } else {
-        InventoryItem.find({bomRequest: req.params.bomRequest}, (err, invetoryItems) => {
+        InventoryItem.findByIdAndUpdate(req.params.id, {$set: {inventoryID: req.body.inventoryID,
+              quantity: req.body.quantity}}, (err, inventoryItem) => {
           if (err) {
             res.status(500).send(err);
+          } else {
+            res.status(200).json({message: 'Inventory item successfully updated'});
           }
-          InventoryItem.findById(req.params.id, (err, inventoryItem) => {
-            if (err) {
-              res.status(500).send(err);
-            }
-            inventoryItem.inventoryID = req.body.inventoryID;
-            inventoryItem.quantity = req.body.quantity;
-            inventoryItem.save((err) => {
-              if (err) {
-                res.status(500).send(err);
-              }
-              res.status(200).json({message: 'Inventory Item successfully updated'});
-            });
-          });
         });
-      }
+      } 
     });
   });
 
   // 'v1/bom-request/inventory-items/:bomRequest/:inventoryID - Delete Inventory Item from BOM Request and Database
   api.delete('/inventory-items/:bomRequest/:id', authenticate, (req, res) => {
-    BomRequest.findById(req.params.bomRequest, (err, bomRequest) => {
+    BomRequest.findOneAndUpdate({_id: req.params.bomRequest, requestor: req.body.requestor,
+        inventoryItems: req.params.id}, {$pull: {inventoryItems: req.params.id}}, (err, bomRequest) => {
       if (err) {
-        res.status(500).send(err);
-      } else if (req.body.requestor != bomRequest.requestor || req.body.role != 'admin') {
-        res.status(403).json({message: 'You do not have permission to edit this request'});
+        if (req.body.role == 'admin') {
+          BomRequest.findByIdAndUpdate(req.params.bomRequest, {$pull: {inventoryItems: req.params.id}}, (err, bomRequest) => {
+            if (err) {
+              res.status(500).send(err);
+            } else {
+              InventoryItem.findByIdAndRemove(req.params.id, (err, inventoryItem) => {
+                if (err) {
+                  res.status(500).send(err);
+                } else {
+                  res.status(200).json({message: 'Inventory item delented and removed from BOM Request by admin'});
+                }
+              });
+            }
+          });
+        } else {
+          res.status(404).json({error: err});
+        }
       } else {
         InventoryItem.findByIdAndRemove(req.params.id, (err, inventoryItem) => {
           if (err) {
             res.status(500).send(err);
-          }
-          BomRequest.findOneAndUpdate({_id: req.params.bomRequest}, {$pull: {subcomponents: req.params.id}}, (err, bomRequest) => {
-            if (err) {
-              res.status(500).send(err);
-            }
+          } else {
             res.status(200).json({message: 'Inventory Item deleted and removed from BOM Request'});
-          });
+          } 
         });
       }
     });
@@ -144,23 +159,33 @@ export default({ config, db }) => {
 
   // 'v1/bom-request/:id - Delete BOM Request
   api.delete('/:id', authenticate, (req, res) => {
-    BomRequest.findById(req.params.id, (err, bomRequest) => {
+    BomRequest.findOneAndRemove({_id: req.params.id, requestor: req.params.requestor}, (err, bomRequest) => {
       if (err) {
-        res.status(500).send(err);
-      } else if (req.body.requestor != bomRequest.requestor || req.body.role != 'admin') {
-        res.status(403).json({message: 'You do not have permission to edit this request'});
-      } else {
-        bomRequest.remove((err) => {
-          if (err) {
-            res.status(500).send(err);
-          }
-          InventoryItem.remove({bomRequest: req.params.id}, (err, success) => {
+        if (req.body.role == 'admin') {
+          BomRequest.findByIdAndRemove(req.params.id, (err, bomRequest) => {
             if (err) {
               res.status(500).send(err);
+            } else {
+              InventoryItem.remove({bomRequest: req.params.id}, (err, inventoryItems) => {
+                if (err) {
+                  res.status(500).send(err);
+                } else {
+                  res.status(200).json({message: 'BOM request and subcomponents deleted by admin'});
+                }
+              });              
             }
-            res.status(200).json({message: 'BOM Request and subcomponents deleted from inventory-items DB'});
           });
-        });
+        } else {
+          res.status(404).json({error: err});
+        }
+      } else {
+        InventoryItem.remove({bomRequest: req.params.id}, (err, inventoryItems) => {
+          if (err) {
+            res.status(500).send(err);
+          } else {
+            res.status(200).json({message: 'BOM request and subcomponents deleted'});
+          }
+        });     
       }
     });
   });
