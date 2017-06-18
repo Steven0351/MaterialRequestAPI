@@ -6,7 +6,7 @@ import { authenticate } from '../middleware/auth-middleware';
 
 let today = new Date();
 
-export default({ config, db}) => {
+export default({ config, db }) => {
   let api = Router();
 
   // 'v1/cycle-count-request/add - Create
