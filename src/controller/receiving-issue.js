@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { Router } from 'express';
-import ReceivingIssue from '../model/receiving-issue';
-import InventoryItem from '../model/inventory-item';
+import ReceivingIssue from '../schemas/receiving-issue';
+import InventoryItem from '../schemas/inventory-item';
 import { authenticate } from '../middleware/auth-middleware';
 
 let today = new Date();

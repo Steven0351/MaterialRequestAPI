@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { Router } from 'express';
-import BomRequest from '../model/bom-request';
-import InventoryItem from '../model/inventory-item';
+import BomRequest from '../schemas/bom-request';
+import InventoryItem from '../schemas/inventory-item';
 import { authenticate } from '../middleware/auth-middleware';
 
 let today = new Date();
@@ -34,7 +34,7 @@ export default({ config, db }) => {
             newSubcomponent.inventoryID = req.body.inventoryID;
             newSubcomponent.quantity = req.body.quantity;
             newSubcomponent.bomRequest = bomRequest._id;
-            newSubcomponent.save((err, bomRequestSuccess) => {
+            newSubcomponent.save((err) => {
               if (err) {
                 res.status(500).send(err);
               } else {
@@ -55,7 +55,7 @@ export default({ config, db }) => {
         newSubcomponent.inventoryID = req.body.inventoryID;
         newSubcomponent.quantity = req.body.quantity;
         newSubcomponent.bomRequest = bomRequest._id;
-        newSubcomponent.save((err, bomRequestSuccess) => {
+        newSubcomponent.save((err) => {
           if (err) {
             res.status(500).send(err);
           }
@@ -73,11 +73,11 @@ export default({ config, db }) => {
 
   api.put('/:id', authenticate, (req, res) => {
     BomRequest.findOneAndUpdate({_id: req.params.id, requestor: req.body.requestor},
-        {$set: {proposedTopLevelID: req.body.proposedTopLevelID}}, (err, bomRequest) => {
+        {$set: {proposedTopLevelID: req.body.proposedTopLevelID}}, (err) => {
       if (err) {
         if (req.body.role == 'admin') {
           BomRequest.findByIdAndUpdate(req.params.id,
-              {$set: {proposedTopLevelID: req.body.proposedTopLevelID }}, (err, bomRequest) => {
+              {$set: {proposedTopLevelID: req.body.proposedTopLevelID }}, (err) => {
                 if (err) {
                   res.status(500).send(err);
                 } else {
@@ -100,7 +100,7 @@ export default({ config, db }) => {
       if (err) {
         if (req.body.role == 'admin') {
           InventoryItem.findByIdAndUpdate(req.params.id, {$set: {inventoryID: req.body.inventoryID,
-              quantity: req.body.quantity}}, (err, inventoryItem) => {
+              quantity: req.body.quantity}}, (err) => {
                 if (err) {
                   res.status(500).send(err);
                 } else {
@@ -112,7 +112,7 @@ export default({ config, db }) => {
         }
       } else {
         InventoryItem.findByIdAndUpdate(req.params.id, {$set: {inventoryID: req.body.inventoryID,
-              quantity: req.body.quantity}}, (err, inventoryItem) => {
+              quantity: req.body.quantity}}, (err) => {
           if (err) {
             res.status(500).send(err);
           } else {
@@ -126,14 +126,14 @@ export default({ config, db }) => {
   // 'v1/bom-request/inventory-items/:bomRequest/:inventoryID - Delete Inventory Item from BOM Request and Database
   api.delete('/inventory-items/:bomRequest/:id', authenticate, (req, res) => {
     BomRequest.findOneAndUpdate({_id: req.params.bomRequest, requestor: req.body.requestor,
-        inventoryItems: req.params.id}, {$pull: {inventoryItems: req.params.id}}, (err, bomRequest) => {
+        inventoryItems: req.params.id}, {$pull: {inventoryItems: req.params.id}}, (err) => {
       if (err) {
         if (req.body.role == 'admin') {
-          BomRequest.findByIdAndUpdate(req.params.bomRequest, {$pull: {inventoryItems: req.params.id}}, (err, bomRequest) => {
+          BomRequest.findByIdAndUpdate(req.params.bomRequest, {$pull: {inventoryItems: req.params.id}}, (err) => {
             if (err) {
               res.status(500).send(err);
             } else {
-              InventoryItem.findByIdAndRemove(req.params.id, (err, inventoryItem) => {
+              InventoryItem.findByIdAndRemove(req.params.id, (err) => {
                 if (err) {
                   res.status(500).send(err);
                 } else {
@@ -146,7 +146,7 @@ export default({ config, db }) => {
           res.status(404).json({error: err});
         }
       } else {
-        InventoryItem.findByIdAndRemove(req.params.id, (err, inventoryItem) => {
+        InventoryItem.findByIdAndRemove(req.params.id, (err) => {
           if (err) {
             res.status(500).send(err);
           } else {
@@ -159,14 +159,14 @@ export default({ config, db }) => {
 
   // 'v1/bom-request/:id - Delete BOM Request
   api.delete('/:id', authenticate, (req, res) => {
-    BomRequest.findOneAndRemove({_id: req.params.id, requestor: req.params.requestor}, (err, bomRequest) => {
+    BomRequest.findOneAndRemove({_id: req.params.id, requestor: req.params.requestor}, (err) => {
       if (err) {
         if (req.body.role == 'admin') {
-          BomRequest.findByIdAndRemove(req.params.id, (err, bomRequest) => {
+          BomRequest.findByIdAndRemove(req.params.id, (err) => {
             if (err) {
               res.status(500).send(err);
             } else {
-              InventoryItem.remove({bomRequest: req.params.id}, (err, inventoryItems) => {
+              InventoryItem.remove({bomRequest: req.params.id}, (err) => {
                 if (err) {
                   res.status(500).send(err);
                 } else {
@@ -179,7 +179,7 @@ export default({ config, db }) => {
           res.status(404).json({error: err});
         }
       } else {
-        InventoryItem.remove({bomRequest: req.params.id}, (err, inventoryItems) => {
+        InventoryItem.remove({bomRequest: req.params.id}, (err) => {
           if (err) {
             res.status(500).send(err);
           } else {

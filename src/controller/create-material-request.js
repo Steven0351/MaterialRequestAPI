@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import { Router } from 'express';
-import CreateMaterialRequest from '../model/create-material-request';
+import CreateMaterialRequest from '../schemas/create-material-request';
 import { authenticate } from '../middleware/auth-middleware';
 
 let today = new Date();
@@ -10,12 +10,12 @@ export default({ config, db }) => {
   
   // 'v1/create-material-request/add' - Create
   api.post('/add', authenticate, (req, res) => {
-    let newCreateMaterialRequest = new CreateMaterialRequest();
-    newCreateMaterialRequest.manufacturerSKU = req.body.manufacturerSKU;
-    newCreateMaterialRequest.description = req.body.description;
-    newCreateMaterialRequest.purchaseRequest = req.body.purchaseRequest;
-    newCreateMaterialRequest.requestor = req.body.requestor;
-    newCreateMaterialRequest.dateRequested = `${today.getMonth()+1}-${today.getDate()}-${today.getFullYear()}`;
+    let newCreateMaterialRequest = new CreateMaterialRequest({
+      manufacturerSKU: req.body.manufacturerSKU,
+      description: req.body.description,
+      requestor: req.body.requestor,
+      dateRequested: `${today.getMonth()+1}-${today.getDate()}-${today.getFullYear()}`
+    });
     newCreateMaterialRequest.save((err) => {
       if (err) {
         res.status(500).send(err);
@@ -28,11 +28,11 @@ export default({ config, db }) => {
   api.put('/:id', authenticate, (req, res) => {
     CreateMaterialRequest.findOneAndUpdate({'_id': req.params.id, 'requestor': req.body.requestor}, 
         {$set: {manufacturerSKU: req.body.manufacturerSKU, description: req.body.description}}, 
-        (err, createMaterialRequest) => {
+        (err) => {
       if (err) {
         if (req.body.role == 'admin') {
           CreateMaterialRequest.findByIdAndUpdate(req.params.id, {$set: {manufacturerSKU: req.body.manufacturerSKU,
-              description: req.body.description}}, (err, createMaterialRequest) => {
+              description: req.body.description}}, (err) => {
                 if (err) {
                   res.status(500).send(err);
                 } else {
@@ -74,8 +74,9 @@ export default({ config, db }) => {
     CreateMaterialRequest.find({}, (err, createMaterialRequests) => {
       if (err) {
         res.status(500).send(err);
+      } else {
+        res.status(200).json(createMaterialRequests);
       }
-      res.status(200).json(createMaterialRequests);
     });
   });
   

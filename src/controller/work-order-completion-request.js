@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { Router } from 'express';
-import WorkOrderCompletionRequest from '../model/work-order-completion-request';
-import InventoryItem from '../model/inventory-item';
+import WorkOrderCompletionRequest from '../schemas/work-order-completion-request';
+import InventoryItem from '../schemas/inventory-item';
 import { authenticate } from '../middleware/auth-middleware';
 
 let today = new Date();

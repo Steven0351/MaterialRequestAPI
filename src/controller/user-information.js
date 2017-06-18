@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
 import { Router } from 'express';
 import { authenticate } from '../middleware/auth-middleware';
-import User from '../model/user';
-import UserInformation from '../model/user-information';
+import User from '../schemas/user';
+import UserInformation from '../schemas/user-information';
 
 export default({ config, db }) => {
   let api = Router();

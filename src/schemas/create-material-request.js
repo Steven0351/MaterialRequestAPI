@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import User from './user';
 import PurchaseRequest from './purchase-request';
 let Schema = mongoose.Schema;
+let today = new Date();
 
 let CreateMaterialRequestSchema = new Schema({
   manufacturerSKU: {

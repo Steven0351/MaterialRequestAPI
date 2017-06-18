@@ -19,7 +19,7 @@ app.use(bodyParser.json({
 
 // Passport config
 app.use(passport.initialize());
-let User = require('./model/user');
+let User = require('./schemas/user');
 passport.use(new LocalStrategy({
   usernameField: 'username',
   passwordField: 'password'

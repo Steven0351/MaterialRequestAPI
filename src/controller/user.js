@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import { Router } from 'express';
-import User from '../model/user';
+import User from '../schemas/user';
 import bodyParser from 'body-parser';
 import passport from 'passport';
 import config from '../config';

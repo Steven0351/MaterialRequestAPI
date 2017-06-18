@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import { Router } from 'express';
-import MaterialIssueRequest from '../model/material-issue-request';
+import MaterialIssueRequest from '../schemas/material-issue-request';
 import { authenticate } from '../middleware/auth-middleware';
 
 let today = Date();
