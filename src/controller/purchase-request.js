@@ -11,16 +11,17 @@ export default({ config, db }) => {
 
 // '/v1/purchase-request/add - Create
   api.post('/add', authenticate, (req, res) => {
-    let newPurchaseRequest = new PurchaseRequest();
-    newPurchaseRequest.shippingMethod = req.body.shippingMethod;
-    newPurchaseRequest.isHot = req.body.isHot || false;
-    newPurchaseRequest.isDropShip = req.body.isHot || false;
-    purchaseRequest.orderHasBeenPlaced = req.body.orderHasBeenPlaced || false;
-    purchaseRequest.orderAcknowledgementReceived = req.body.orderAcknowledgementReceived || false;
-    purchaseRequest.trackingInformation = req.body.trackingInformation || 'No tracking available';
-    newPurchaseRequest.requestor = req.body.requestor;
-    newPurchaseRequest.dateRequested = `${today.getMonth()+1}-${today.getDate()}-${today.getFullYear()}`;
-
+    let newPurchaseRequest = new PurchaseRequest({
+      shippingMethod: req.body.shippingMethod,
+      isHot: req.body.isHot || false,
+      isDropShip: req.body.isDropShip || false,
+      orderHasBeenPlaced: req.body.orderHasBeenPlaced || false,
+      orderAcknowledgementReceived: req.body.orderAcknowledgementReceived || false,
+      trackingInformation: req.body.trackingInformation || 'No tracking available',
+      requestor: req.body.requestor,
+      dateRequested: `${today.getMonth()+1}-${today.getDate()}-${today.getFullYear()}`
+    });
+    
     newPurchaseRequest.save((err) => {
       if (err) {
         res.status(500).send(err);
@@ -32,28 +33,52 @@ export default({ config, db }) => {
 
   // 'v1/purchase-request/inventory-items/add/:id - Add inventory items 
   api.post('/inventory-items/add/:id', authenticate, (req, res) => {
-    PurchaseRequest.findById(req.params.id, (err, purchaseRequest) => {
+    PurchaseRequest.findOne({_id: req.params.id, requestor: req.body.requestor}, (err, purchaseRequest) => {
       if (err) {
-        res.status(500).send(err);
-      } else if (req.body.requestor != purchaseRequest.requestor || req.body.role != 'admin') {
-        res.status(403).json({message: 'You do not have permission to edit this request'});
-        return;
+        if (req.body.role == 'admin') {
+          PurchaseRequest.findById(req.params.id, (err, purchaseRequest) => {
+            let itemToPurchase = new InventoryItem({
+              inventoryID: req.body.inventoryID,
+              quantity: req.body.quantity,
+              purchaseRequest: purchaseRequest._id
+            });
+            itemToPurchase.save((err) => {
+              if (err) {
+                res.status(500).send(err);
+              } else {
+                purchaseRequest.inventoryItems.push(itemToPurchase);
+                purchaseRequest.save((err) => {
+                  if (err) {
+                    res.status(500).send(err);
+                  } else {
+                    res.status(200).json({message: 'Item added to purchase request by admin'});
+                  }
+                });
+              }
+            });
+          });
+        } else {
+          res.status(404).json({error: err});
+        }
       } else {
-        let itemToPurchase = new InventoryItem();
-        itemToPurchase.inventoryID = req.body.inventoryID;
-        itemToPurchase.quantity = req.body.quantity;
-        itemToPurchase.purchaseRequest = purchaseRequest._id;
+        let itemToPurchase = new InventoryItem({
+          inventoryID: req.body.inventoryID,
+          quantity: req.body.quantity,
+          purchaseRequest: purchaseRequest._id
+        });
         itemToPurchase.save((err) => {
           if (err) {
             res.status(500).send(err);
+          } else {
+            purchaseRequest.inventoryItems.push(itemToPurchase);
+            purchaseRequest.save((err) => {
+              if (err) {
+                res.status(500).send(err);
+              } else {
+                res.status(201).json({message: 'Inventory Item successfully added to purchase request'});
+              }
+            });
           }
-          purchaseRequest.inventoryItems.push(itemToPurchase);
-          purchaseRequest.save((err) => {
-            if (err) {
-              res.status(500).send(err);
-            }
-            res.status(201).json({message: 'Inventory Item successfully added to purchase request'});
-          });
         });
       }
     });
@@ -61,47 +86,72 @@ export default({ config, db }) => {
 
   // 'v1/purchase-request/:id - Update purchase request
   api.put('/:id', authenticate, (req, res) => {
-    PurchaseRequest.findOne({'_id': req.params.id, 'requestor': req.body.requestor}, (err, purchaseRequest) => {
+    PurchaseRequest.findOneAndUpdate({_id: req.params.id, requestor: req.body.requestor}, {$set: {
+        shippingMethod: req.body.shippingMethod,
+        isHot: req.body.isHot,
+        isDropShip: req.body.isDropShip,
+        orderHasBeenPlaced: req.body.orderHasBeenPlaced,
+        orderAcknowledgementReceived: req.body.orderAcknowledgementReceived,
+        trackingInformation: req.body.trackingInformation}}, (err) => {
       if (err) {
-        res.status(500).send(err);
-     /* } else if (req.body.requestor != purchaseRequest.requestor._id.toString() || req.body.role != 'admin') {
-        res.status(403).json({message: 'You do not have permission to edit this request ' + purchaseRequest.requestor._id.toString()});
-        return; */
+        if (req.body.role == 'admin') {
+          PurchaseRequest.findByIdAndUpdate(req.params.id, {$set: {
+              shippingMethod: req.body.shippingMethod,
+              isHot: req.body.isHot,
+              isDropShip: req.body.isDropShip,
+              orderHasBeenPlaced: req.body.orderHasBeenPlaced,
+              orderAcknowledgementReceived: req.body.orderAcknowledgementReceived,
+              trackingInformation: req.body.trackingInformation}}, (err) => {
+            if (err) {
+              res.status(500).send(err);
+            } else {
+              res.status(200).json({message: 'Purchase request updated by admin'});
+            }
+          });
+        } else {
+          res.status(404).json({error: err});
+        }
       } else {
-        purchaseRequest.shippingMethod = req.body.shippingMethod;
-        purchaseRequest.isHot = req.body.isHot;
-        purchaseRequest.isDropShip = req.body.isDropShip;
-        purchaseRequest.orderHasBeenPlaced = req.body.orderHasBeenPlaced;
-        purchaseRequest.orderAcknowledgementReceived = req.body.orderAcknowledgementReceived;
-        purchaseRequest.trackingInformation = req.body.trackingInformation;
-        purchaseRequest.save((err) => {
-          if (err) {
-            res.status(500).send(err);
-          }
-          res.status(200).json({message: 'Purchase request successfully updated'});
-        });
+        res.status(200).json({message: 'Purchase request successfully updated'});
       }
     });
   });
   
   // 'v1/purchase-request/:id/:inventoryItem - Update purchase request line item
   api.put('/inventory-items/:purchaseRequest/:inventoryItem', authenticate, (req, res) => {
-    PurchaseRequest.findById(req.params.purchaseRequest, (err, purchaseRequest) => {
+    PurchaseRequest.findOne({_id: req.params.purchaseRequest, requestor: req.body.requestor},
+        (err) => {
       if (err) {
-        res.status(500).send(err);
-      } else if (req.body.requestor != purchaseRequest.requestor || req.body.role != 'admin') {
-        res.status(403).json({message: 'You do not have permission to edit this request'});
-        return;
-      } else {
-        InventoryItem.findById(req.params.inventoryItem, (err, lineItem) => {
-          lineItem.inventoryID = req.body.inventoryID;
-          lineItem.quantity = req.body.quantity;
-          lineItem.save((err) => {
+        if (req.body.role == 'admin') {
+          PurchaseRequest.findById(req.params.purchaseRequest, (err) => {
             if (err) {
               res.status(500).send(err);
+            } else {
+              InventoryItem.findByIdAndUpdate(req.params.inventoryItem, {$set: {
+                  inventoryID: req.body.inventoryID,
+                  quantity: req.body.quantity
+              }}, (err) => {
+                if (err) {
+                  res.status(500).send(err);
+                } else {
+                  res.status(200).json({message: 'Line item updated by admin'});
+                }
+              });
             }
-            res.status(200).json({message: 'Line item successfully updated'})
           });
+        } else {
+          res.status(404).json({error: err});
+        }
+      } else {
+        InventoryItem.findByIdAndUpdate(req.params.inventoryItem, {$set: {
+            inventoryID: req.body.inventoryID,
+            quantity: req.body.quantity
+        }}, (err) => {
+          if (err) {
+            res.status(500).send(err);
+          } else {
+            res.status(200).json({message: 'Line item updated by admin'});
+          }
         });
       }
     });
@@ -109,25 +159,30 @@ export default({ config, db }) => {
 
 // 'v1/purchase-request/:id' - Delete purchase request
   api.delete('/:id', authenticate, (req, res) => {
-    PurchaseRequest.findById(req.params.id, (err, purchaseRequest) => {
+    PurchaseRequest.findOneAndRemove({_id: req.params.id, requestor: req.body.requestor}, (err) => {
       if (err) {
-        res.status(500).send(err);
-      } else if (purchaseRequest == null) {
-        res.status(404).send('Purchase request not found');
-      } else if (req.body.requestor != purchaseRequest.requestor || req.body.role != 'admin') {
-        res.status(403).json({message: 'You do not have permission to delete this request'});
-      } else {
-        PurchaseRequest.remove({_id: req.params.id}, (err, purchaseRequest) => {
-          if (err) {
-            res.status(500).send(err);
-            return;
-          }
-          InventoryItem.remove({purchaseRequest: req.params.id}, (err, inventoryItem) => {
+        if (req.body.role == 'admin') {
+          PurchaseRequest.findByIdAndRemove(req.params.id, (err) => {
             if (err) {
               res.status(500).send(err);
+            } else {
+              InventoryItem.remove({purchaseRequest: req.params.id}, (err) => {
+                if (err) {
+                  res.status(500).send(err);
+                } else {
+                  res.status(200).json({message: 'Purchase order request deleted by admin'});
+                }
+              });
             }
-            res.status(200).json({message: 'Purchase request successfully deleted'});
           });
+        }
+      } else {
+        InventoryItem.remove({purchaseRequest: req.params.id}, (err) => {
+          if (err) {
+            res.status(500).send(err);
+          } else {
+            res.status(200).json({message: 'Purchase request successfully deleted'});
+          }
         });
       }
     });
@@ -135,22 +190,34 @@ export default({ config, db }) => {
 
   // 'v1/purchase-request/:id/:lineItem' - Delete purchase order line item
   api.delete('/:id/:lineItem', authenticate, (req, res) => {
-    PurchaseRequest.findById(req.params.id, (err, purchaseRequest) => {
+    PurchaseRequest.findOneAndUpdate({_id: req.params.id, requestor: req.body.requestor}, 
+        {$pull: {inventoryItems: req.params.lineItem}}, (err) => {
       if (err) {
-        res.status(500).send(err);
-      } else if (req.body.requestor != purchaseRequest.requestor || req.body.role != 'admin') {
-        res.status(403).json({message: 'You do not have permission to edit this request'});
+        if (req.body.role == 'admin') {
+          PurchaseRequest.findByIdAndUpdate(req.params.id, {$pull: {inventoryItems: req.params.lineItem}},
+              (err) => {
+            if (err) {
+              res.status(500).send(err);
+            } else {
+              InventoryItem.findByIdAndRemove(req.params.id, (err) => {
+                if (err) {
+                  res.status(500).send(err);
+                } else {
+                  res.status(200).json({message: 'Line item deleted by admin'});
+                }
+              });
+            }
+          });
+        } else {
+          res.status(404).json({error: err});
+        }
       } else {
-        InventoryItem.findByIdAndRemove(req.params.lineItem, (err, inventoryItem) => {
+        InventoryItem.findByIdAndRemove(req.params.lineItem, (err) => {
           if (err) {
             res.status(500).send(err);
-          }
-          PurchaseRequest.findByIdAndUpdate(req.params.id, {$pull: {inventoryItems: req.params.lineItem}}, (err, purchaseRequest) => {
-            if (err) {
-              res.status(500).send(err)
-            }
+          } else {
             res.status(200).json({message: 'Line item deleted and removed from purchase request'});
-          });
+          }
         });
       }
     });
@@ -164,37 +231,37 @@ export default({ config, db }) => {
       }
       res.status(200).json(purchaseRequests);
       });
-    });
+  });
 
-    // 'v1/purchase-request/isHot/:isHot - get all purchase requests matching input boolean - Read
-    api.get('/isHot/:isHot', authenticate, (req, res) => {
-      PurchaseRequest.find({'isHot': req.params.isHot}, (err, purchaseRequests) => {
-        if (err) {
-          res.status(500).send(err);
-        }
-        res.status(200).json(purchaseRequests);
-      });
+  // 'v1/purchase-request/isHot/:isHot - get all purchase requests matching input boolean - Read
+  api.get('/isHot/:isHot', authenticate, (req, res) => {
+    PurchaseRequest.find({'isHot': req.params.isHot}, (err, purchaseRequests) => {
+      if (err) {
+        res.status(500).send(err);
+      }
+      res.status(200).json(purchaseRequests);
     });
+  });
 
-    // 'v1/purchase-request/orderHasBeenPlaced/:orderHasBeenPlaced' - get all purchase requests matching input boolean - Read
-    api.get('/orderHasBeenPlaced/:orderHasBeenPlaced', authenticate, (req, res) => {
-      PurchaseRequest.find({'orderHasBeenPlaced': req.params.orderHasBeenPlaced}, (err, purchaseRequests) => {
-        if (err) {
-          res.status(500).send(err);
-        }
-        res.status(200).json(purchaseRequests);
-      });
+  // 'v1/purchase-request/orderHasBeenPlaced/:orderHasBeenPlaced' - get all purchase requests matching input boolean - Read
+  api.get('/orderHasBeenPlaced/:orderHasBeenPlaced', authenticate, (req, res) => {
+    PurchaseRequest.find({'orderHasBeenPlaced': req.params.orderHasBeenPlaced}, (err, purchaseRequests) => {
+      if (err) {
+        res.status(500).send(err);
+      }
+      res.status(200).json(purchaseRequests);
     });
+  });
 
-    // 'v1/purchase-request/requestor/:requestor' - get all purchase requests for specific requestor - Read
-    api.get('/requestor/:requestor', authenticate, (req, res) => {
-      PurchaseRequest.find({'requestor': req.params.requestor}, (err, purchaseRequests) => {
-        if (err) {
-          res.status(500).send(err);
-        }
-        res.status(200).json(purchaseRequests);
-      });
+  // 'v1/purchase-request/requestor/:requestor' - get all purchase requests for specific requestor - Read
+  api.get('/requestor/:requestor', authenticate, (req, res) => {
+    PurchaseRequest.find({'requestor': req.params.requestor}, (err, purchaseRequests) => {
+      if (err) {
+        res.status(500).send(err);
+      }
+      res.status(200).json(purchaseRequests);
     });
+  });
 
   return api;
 }

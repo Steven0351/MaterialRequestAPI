@@ -10,94 +10,131 @@ export default({ config, db }) => {
 
   // 'v1/material-issue-request/add - Create
   api.post('/add', authenticate, (req, res) => {
-    let newMaterialIssueRequest = new MaterialIssueRequest();
-    newMaterialIssueRequest.workOrder = req.body.workOrder;
-    newMaterialIssueRequest.requestor = req.body.requestor;
-    newMaterialIssueRequest.isComplete = req.body.isComplete || true;
-    newMaterialIssueRequest.dateRequested = `${today.getMonth()+1}-${today.getDate()}-${today.getFullYear()}`;
+    let newMaterialIssueRequest = new MaterialIssueRequest({
+      workOrder: req.body.workOrder,
+      requestor: req.body.requestor,
+      isComplete: req.body.isComplete || false,
+      dateRequested: `${today.getMonth()+1}-${today.getDate()}-${today.getFullYear()}`
+    });
 
     newMaterialIssueRequest.save(err => {
       if (err) {
         res.status(500).send(err);
+      } else {
+        res.status(201).json({ message: 'Material Issue Request saved successfully'});
       }
-      res.status(201).json({ message: 'Material Issue Request saved successfully'});
     });
   });
 
   // 'v1/material-issue-request/inventory-items/add/:id' - Add InventoryItem to MaterialIssueRequest
   api.post('/inventory-items/add/:id', authenticate, (req, res) => {
-      MaterialIssueRequest.findById(req.params.id, (err, issueRequest) => {
-        if (err) {
-          res.status(500).send(err);
-        } else if (req.body.requestor != materialIssueRequest.requestor || req.body.role != 'admin') {
-          res.status(403).json({message: 'You do not have permission to edit this request'});
-          return;
-        } else {
-          let itemToIssue = new InventoryItem();
-
-          itemToIssue.quantity = req.body.quantity;
-          itemToIssue.materialIssueRequest = issueRequest._id;
-          itemToIssue.save((err, toIssue) => {
+    MaterialIssueRequest.findOne({_id: req.params.id, requestor: req.body.requestor}, (err, issueRequest) => {
+      if (err) {
+        if (req.body.role == 'admin') {
+          MaterialIssueRequest.findById(req.params.id, (err, issueRequest) => {
             if (err) {
               res.status(500).send(err);
+            } else {
+              let itemToIssue = new InventoryItem({
+                inventoryID: req.body.inventoryID,
+                quantity: req.body.quantity,
+                materialIssueRequest: issueRequest._id
+              });
+              itemToIssue.save((err) => {
+                if (err) {
+                  res.status(500).send(err);
+                } else {
+                  issueRequest.inventoryItems.push(itemToIssue);
+                  issueRequest.save((err) => {
+                    if (err) {
+                      res.status(500).send(err);
+                    } else {
+                      res.status(200).json({message: 'Inventory Item added to material issue request by admin'});
+                    }
+                  });
+                }
+              });
             }
+          });
+        } else {
+          res.status(404).json({error: err});
+        }
+      } else {
+        let itemToIssue = new InventoryItem({
+          inventoryID: req.body.inventoryID,
+          quantity: req.body.quantity,
+          materialIssueRequest: issueRequest._id
+        });
+        itemToIssue.save((err) => {
+          if (err) {
+            res.status(500).send(err);
+          } else {
             issueRequest.inventoryItems.push(itemToIssue);
             issueRequest.save((err) => {
               if (err) {
                 res.status(500).send(err);
+              } else {
+                res.status(200).json({message: 'Inventory Item added to material issue request by admin'});
               }
-              res.json({message: 'Inventory Item successfully added to material issue request'});
             });
-          });
-        }
-      });
+          }
+        });
+      }
     });
+  });
 
   // 'v1/material-issue-request/:id - Update
   api.put('/:id', authenticate, (req, res) => {
-    MaterialIssueRequest.findById(req.params.id, (err, materialIssueRequest) => {
+    MaterialIssueRequest.findOneAndUpdate({_id: req.params.id, requestor: req.body.requestor},
+        {$set: {workOrder: req.body.workOrder, isComplete: req.body.isComplete}}, (err) => {
       if (err) {
-        res.status(500).send(err);
-      } else if (req.body.requestor != materialIssueRequest.requestor || req.body.role != 'admin') {
-        res.status(403).json({message: 'You do not have permission to edit this request'});
-        return;
+        if (req.body.role == 'admin') {
+          MaterialIssueRequest.findByIdAndUpdate(req.params.id, {$set: {workOrder: req.body.workOrder,
+              isComplete: req.body.isComplete}}, (err) => {
+            if (err) {
+              res.status(500).send(err);
+            } else {
+              res.status(200).json({message: 'Material issue request updated by admin'});
+            }
+          });
+        } else {
+          res.status(404).json({error: err});
+        }
       } else {
-        materialIssueRequest.workOrder = req.body.workOrder;
-        materialIssueRequest.requestor = req.body.requestor;
-        materialIssueRequest.isComplete = req.body.isComplete;
-        materialIssueRequest.save((err) => {
-          if (err) {
-            res.status(500).send(err);
-          }
-          res.json({message: 'Material issue request successfully updated'});
-        });
+        res.json({message: 'Material issue request successfully updated'});
       }
     });
   });
 
   // 'v1/material-issue-request/:id - Delete
   api.delete('/:id', authenticate, (req, res) => {
-    MaterialIssueRequest.findById({_id: req.params.id}, (err, materialIssueRequest) => {
+    MaterialIssueRequest.findOneAndRemove({_id: req.params.id, requestor: req.body.requestor},
+        (err) => {
       if (err) {
-        res.status(500).send(err);
-      } else if (materialIssueRequest == null) {
-        res.status(404).send('Material issue request not found');
-      } else if (req.body.requestor != materialIssueRequest.requestor || req.body.role != 'admin') {
-        res.status(403).json({message: 'You do not have permission to delete this request'});
-        return;
-      } else {
-        MaterialIssueRequest.remove({_id: req.params.id}, (err, materialIssueRequest) => {
-          if (err) {
-            res.status(500).send(err);
-            return;
-          }
-          InventoryItem.remove({materialIssueRequest: req.params.id}, (err, inventoryItem) => {
+        if (req.body.role == 'admin') {
+          MaterialIssueRequest.findByIdAndRemove(req.params.id, (err) => {
             if (err) {
               res.status(500).send(err);
-              return;
+            } else {
+              InventoryItem.remove({materialIssueRequest: req.params.id}, (err) => {
+                if (err) {
+                  res.status(500).send(err);
+                } else {
+                  res.status(200).json({message: 'Material issue request deleted by admin'});
+                }
+              });
             }
-            res.status(200).json({message: 'Successfully deleted material issue request'});
           });
+        } else {
+          res.status(404).json({error: err});
+        }
+      } else {
+        InventoryItem.remove({materialIssueRequest: req.params.id}, (err) => {
+          if (err) {
+            res.status(500).send(err);
+          } else {
+            res.status(200).json({message: 'Successfully deleted material issue request'});
+          }
         });
       }
     });
@@ -108,8 +145,9 @@ export default({ config, db }) => {
     MaterialIssueRequest.find({}, (err, materialIssueRequests) => {
       if (err) {
         res.status(500).send(err);
+      } else {
+        res.status(200).json(materialIssueRequests);
       }
-      res.status(200).json(materialIssueRequests);
     });
   });
 
