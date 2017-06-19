@@ -11,45 +11,76 @@ export default({ config, db }) => {
 
   // 'v1/receiving-issue/add - Create Receiving Issue
   api.post('/add', authenticate, (req, res) => {
-    let newReceivingIssue = new ReceivingIssue();
-    newReceivingIssue.vendor = req.body.vendor;
-    newReceivingIssue.purchaseOrder = req.body.purchaseOrder;
-    newReceivingIssue.descriptionOfIssue = req.body.descriptionOfIssue;
-    newReceivingIssue.requestor = req.body.requestor;
-    newReceivingIssue.dateRequested = `${today.getMonth()+1}-${today.getDate()}-${today.getFullYear()}`;
-
+    let newReceivingIssue = new ReceivingIssue({
+      vendor: req.body.vendor,
+      purchaseOrder: req.body.purchaseOrder,
+      descriptionOfIssue: req.body.descriptionOfIssue,
+      requestor: req.body.requestor,
+      dateRequested: `${today.getMonth()+1}-${today.getDate()}-${today.getFullYear()}`
+    });
+    
     newReceivingIssue.save((err) => {
       if (err) {
         res.status(500).send(err);
+      } else {
+        res.status(201).json({message: 'Receiving issue successfully created'});
       }
-      res.status(201).json({message: 'Receiving issue successfully created'});
     });
   });
 
   // 'v1/receiving-issue/inventory-items/add/:id' - Create inventory Item for Receiving Issue
   api.post('/inventory-items/add/:id', authenticate, (req, res) => {
-     ReceivingIssue.findById(req.params.id, (err, receivingIssue) => {
+     ReceivingIssue.findOne({_id: req.params.id, requestor: req.body.requestor},
+        (err, receivingIssue) => {
       if (err) {
-        res.status(500).send(err);
-      } else if (req.body.requestor != receivingIssue.requestor || req.body.role != 'admin') {
-        res.status(403).json({message: 'You do not have permission to edit this request'});
-        return;
+        if (req.body.role == 'admin') {
+          ReceivingIssue.findById(req.params.id, (err, receivingIssue) => {
+            if (err) {
+              res.status(500).send(err);
+            } else {
+              let receivingIssueItem = new InventoryItem({
+                inventoryID: req.body.inventoryID,
+                quantity: req.body.quantity,
+                receivingIssue: receivingIssue._id
+              });
+              receivingIssueItem.save((err) => {
+                if (err) {
+                  res.status(500).send(err);
+                } else {
+                  receivingIssue.inventoryItems.push(receivingIssueItem);
+                  receivingIssue.save((err) => {
+                    if (err) {
+                      res.status(500).send(err);
+                    } else {
+                      res.status(200).json({message: 'Item added by admin'});
+                    }
+                  });
+                }
+              });
+            }
+          });
+        } else {
+          res.status(404).json({error: err});
+        }
       } else {
-        let receivingIssueItem = new InventoryItem();
-        receivingIssueItem.inventoryID = req.body.inventoryID;
-        receivingIssueItem.quantity = req.body.quantity;
-        receivingIssueItem.receivingIssue = receivingIssue._id;
+        let receivingIssueItem = new InventoryItem({
+          inventoryID: req.body.inventoryID,
+          quantity: req.body.quantity,
+          receivingIssue: receivingIssue._id
+        });
         receivingIssueItem.save((err) => {
           if (err) {
             res.status(500).send(err);
+          } else {
+            receivingIssue.inventoryItems.push(receivingIssueItem);
+            receivingIssue.save((err) => {
+              if (err) {
+                res.status(500).send(err);
+              } else {
+                res.status(200).json({message: 'Item added by admin'});
+              }
+            });
           }
-          receivingIssue.inventoryItems.push(receivingIssueItem);
-          receivingIssue.save((err) => {
-            if (err) {
-              res.status(500).send(err);
-            }
-            res.status(201).json({message: 'Inventory Item successfully added to receiving issue'});
-          });
         });
       }
     });
@@ -57,47 +88,55 @@ export default({ config, db }) => {
 
   // 'v1/receiving-issue/:id' - Update Receiving Issue
   api.put('/:id', authenticate, (req, res) => {
-    ReceivingIssue.findById(req.params.id, (err, receivingIssue) => {
+    ReceivingIssue.findOneAndUpdate({_id: req.params.id, requestor: req.body.requestor},
+        {$set: {vendor: req.body.vendor,
+        purchaseOrder: req.body.purchaseOrder,
+        descriptionOfIssue: req.body.descriptionOfIssue}}, (err) => {
       if (err) {
-        res.status(500).send(err);
-      } else if (req.body.requestor != receivingIssue.requestor || req.body.role != 'admin') {
-        res.status(403).json({message: 'You do not have permission to edit this request'});
-        return;
+        if (req.body.role == 'admin') {
+          ReceivingIssue.findByIdAndUpdate(req.params.id, {$set: {vendor: req.body.vendor,
+              purchaseOrder: req.body.purchaseOrder,
+              descriptionOfIssue: req.body.descriptionOfIssue}}, (err) => {
+            if (err) {
+              res.status(500).send(err);
+            } else {
+              res.status(200).json({message: 'Receiving issue updated by admin'});
+            }
+          });
+        } else {
+          res.status(404).json({error: err});
+        }
       } else {
-        receivingIssue.vendor = req.body.vendor;
-        receivingIssue.purchaseOrder = req.body.purchaseOrder;
-        receivingIssue.descriptionOfIssue = req.body.descriptionOfIssue;
-        receivingIssue.save((err) => {
-          if (err) {
-            res.status(500).send(err);
-          }
-          res.status(200).json({message: 'Receiving issue successfully updated'});
-        });
+        res.status(200).json({message: 'Receiving issue successfully updated'});
       }
     });
   });
 
   // 'v1/receiving-issue/:receivingIssue/:inventoryItem' - Update receiving issue item
   api.put('/inventory-items/:receivingIssue/:inventoryItem', authenticate, (req, res) => {
-    ReceivingIssue.findById(req.params.receivingIssue, (err, receivingIssue) => {
+    ReceivingIssue.findOne({_id: req.params.receivingIssue, requestor: req.body.requestor},
+        (err) => {
       if (err) {
-        res.status(500).send(err);
-      } else if (req.body.requestor != receivingIssue.requestor || req.body.role != 'admin') {
-        res.status(403).json({message: 'You do not have permission to edit this request'});
-        return;
-      } else {
-        InventoryItem.findById(req.params.inventoryItem, (err, inventoryItem) => {
-          if (err) {
-            res.status(500).send(err);
-          }
-          inventoryItem.inventoryID = req.body.inventoryID;
-          inventoryItem.quantity = req.body.quantity;
-          inventoryItem.save((err) => {
+        if (req.body.role == 'admin') {
+          InventoryItem.findByIdAndUpdate(req.params.inventoryItem, {$set: {
+              inventoryID: req.body.inventoryID, quantity: req.body.quantity}}, (err) => {
             if (err) {
               res.status(500).send(err);
+            } else {
+              res.status(200).json({message: 'Item updated by admin'});
             }
-            res.status(200).json({message: 'Inventory item successfully updated'});
           });
+        } else {
+          res.status(404).json({error: err});
+        }
+      } else {
+        InventoryItem.findByIdAndUpdate(req.params.inventoryItem, {$set: {
+            inventoryID: req.body.inventoryID, quantity: req.body.quantity}}, (err) => {
+          if (err) {
+            res.status(500).send(err);
+          } else {
+            res.status(200).json({message: 'Item updated by admin'});
+          }
         });
       }
     });
@@ -105,23 +144,36 @@ export default({ config, db }) => {
 
   // 'v1/receiving-issue/:id' - Delete receiving issue
   api.delete('/:id', authenticate, (req, res) => {
-    ReceivingIssue.findById(req.params.receivingIssue, (err, receivingIssue) => {
+    ReceivingIssue.findOneAndRemove({_id: req.params.id, requestor: req.body.requestor},
+        (err) => {
       if (err) {
-        res.status(500).send(err);
+        if (req.body.role == 'admin') {
+          ReceivingIssue.findByIdAndRemove(req.params.id, (err) => {
+            if (err) {
+              res.status(500).send(err);
+            } else {
+              InventoryItem.remove({receivingIssue: req.params.id}, (err) => {
+                if (err) {
+                  res.status(500).send(err);
+                } else {
+                  res.status(200).json({message: 'Receiving issue deleted by admin'});
+                }
+              });
+            }
+          });
+        } else {
+          res.status(404).json({error: err});
+        }
       } else if (req.body.requestor != receivingIssue.requestor || req.body.role != 'admin') {
         res.status(403).json({message: 'You do not have permission to edit this request'});
         return;
       } else {
-        ReceivingIssue.findByIdAndRemove(req.params.id, (err) => {
+        InventoryItem.remove({receivingIssue: req.params.id}, (err) => {
           if (err) {
             res.status(500).send(err);
-          }
-          InventoryItem.remove({receivingIssue: req.params.id}, (err) => {
-            if (err) {
-              res.status(500).send(err);
-            }
+          } else {
             res.status(200).json({message: 'Receiving issue successfully deleted'});
-          });
+          }
         });
       }
     });
@@ -129,23 +181,30 @@ export default({ config, db }) => {
 
   // 'v1/receiving-issue/:receivingIssue/:inventoryItem' - Delete inventory item from receiving issue
   api.delete('/:receivingIssue/:inventoryItem', authenticate, (req, res) => {
-    ReceivingIssue.findById(req.params.receivingIssue, (err, receivingIssue) => {
+    ReceivingIssue.findOneAndUpdate({_id: req.params.receivingIssue, requestor: req.body.requestor},
+       {$pull: {inventoryItems: req.params.inventoryItem}}, (err) => {
       if (err) {
-        res.status(500).send(err);
-      } else if (req.body.requestor != receivingIssue.requestor || req.body.role != 'admin') {
-        res.status(403).json({message: 'You do not have permission to edit this request'});
-        return;
+        ReceivingIssue.findByIdAndUpdate(req.params.receivingIssue,
+            {$pull: {inventoryItems: req.params.inventoryItem}}, (err) => {
+          if (err) {
+            res.status(500).send(err);
+          } else {
+            InventoryItem.findByIdAndRemove(req.params.inventoryItem, (err) => {
+              if (err) {
+                res.status(500).send(err);
+              } else {
+                res.status(200).json({message: 'Item deleted by admin'});
+              }
+            });
+          }
+        });
       } else {
         InventoryItem.findByIdAndRemove(req.params.inventoryItem, (err) => {
           if (err) {
             res.status(500).send(err);
+          } else {
+            res.status(200).json({message: 'Item deleted by admin'});
           }
-          ReceivingIssue.findByIdAndUpdate(req.params.receivingIssue, {$pull: {inventoryItems: req.params.inventoryItem}}, (err) => {
-            if (err) {
-              res.status(500).send(err);
-            }
-            res.status(200).json({message: 'Inventory item succesfully removed from receiving issue'});
-          });
         });
       }
     });
