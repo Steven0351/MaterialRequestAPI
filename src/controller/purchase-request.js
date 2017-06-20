@@ -13,10 +13,10 @@ export default({ config, db }) => {
   api.post('/add', authenticate, (req, res) => {
     let newPurchaseRequest = new PurchaseRequest({
       shippingMethod: req.body.shippingMethod,
-      isHot: req.body.isHot || false,
-      isDropShip: req.body.isDropShip || false,
-      orderHasBeenPlaced: req.body.orderHasBeenPlaced || false,
-      orderAcknowledgementReceived: req.body.orderAcknowledgementReceived || false,
+      hot: req.body.hot || false,
+      dropShip: req.body.dropShip || false,
+      placed: req.body.placed || false,
+      acknowledgementReceived: req.body.acknowledgementReceived || false,
       trackingInformation: req.body.trackingInformation || 'No tracking available',
       requestor: req.body.requestor,
       dateRequested: `${today.getMonth()+1}-${today.getDate()}-${today.getFullYear()}`
@@ -88,19 +88,19 @@ export default({ config, db }) => {
   api.put('/:id', authenticate, (req, res) => {
     PurchaseRequest.findOneAndUpdate({_id: req.params.id, requestor: req.body.requestor}, {$set: {
         shippingMethod: req.body.shippingMethod,
-        isHot: req.body.isHot,
-        isDropShip: req.body.isDropShip,
-        orderHasBeenPlaced: req.body.orderHasBeenPlaced,
-        orderAcknowledgementReceived: req.body.orderAcknowledgementReceived,
+        hot: req.body.hot,
+        dropShip: req.body.dropShip,
+        placed: req.body.placed,
+        acknowledgementReceived: req.body.acknowledgementReceived,
         trackingInformation: req.body.trackingInformation}}, (err) => {
       if (err) {
         if (req.body.role == 'admin') {
           PurchaseRequest.findByIdAndUpdate(req.params.id, {$set: {
               shippingMethod: req.body.shippingMethod,
-              isHot: req.body.isHot,
-              isDropShip: req.body.isDropShip,
-              orderHasBeenPlaced: req.body.orderHasBeenPlaced,
-              orderAcknowledgementReceived: req.body.orderAcknowledgementReceived,
+              hot: req.body.hot,
+              dropShip: req.body.dropShip,
+              placed: req.body.placed,
+              acknowledgementReceived: req.body.acknowledgementReceived,
               trackingInformation: req.body.trackingInformation}}, (err) => {
             if (err) {
               res.status(500).send(err);
@@ -233,9 +233,9 @@ export default({ config, db }) => {
       });
   });
 
-  // 'v1/purchase-request/isHot/:isHot - get all purchase requests matching input boolean - Read
-  api.get('/isHot/:isHot', authenticate, (req, res) => {
-    PurchaseRequest.find({'isHot': req.params.isHot}, (err, purchaseRequests) => {
+  // 'v1/purchase-request/hot/:hot - get all purchase requests matching input boolean - Read
+  api.get('/hot/:hot', authenticate, (req, res) => {
+    PurchaseRequest.find({'hot': req.params.hot}, (err, purchaseRequests) => {
       if (err) {
         res.status(500).send(err);
       }
@@ -243,9 +243,9 @@ export default({ config, db }) => {
     });
   });
 
-  // 'v1/purchase-request/orderHasBeenPlaced/:orderHasBeenPlaced' - get all purchase requests matching input boolean - Read
-  api.get('/orderHasBeenPlaced/:orderHasBeenPlaced', authenticate, (req, res) => {
-    PurchaseRequest.find({'orderHasBeenPlaced': req.params.orderHasBeenPlaced}, (err, purchaseRequests) => {
+  // 'v1/purchase-request/placed/:placed' - get all purchase requests matching input boolean - Read
+  api.get('/placed/:placed', authenticate, (req, res) => {
+    PurchaseRequest.find({'placed': req.params.placed}, (err, purchaseRequests) => {
       if (err) {
         res.status(500).send(err);
       }
