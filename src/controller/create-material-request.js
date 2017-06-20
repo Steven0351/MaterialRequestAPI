@@ -48,11 +48,11 @@ export default({ config, db }) => {
     });    
   });
 
-  api.delete('/:id', authenticate, (req, res) => {
-    CreateMaterialRequest.findOneAndRemove({'_id': req.params.id, 'requestor': req.body.requestor}, 
+  api.delete('/:id/:requestor', authenticate, (req, res) => {
+    CreateMaterialRequest.findOneAndRemove({'_id': req.params.id, 'requestor': req.params.requestor}, 
         (err) => {
       if (err) {
-        if (req.body.role == 'admin') {
+        if (req.params.requestor == 'admin') {
           CreateMaterialRequest.findByIdAndRemove(req.params.id, (err) => {
             if (err) {
               res.status.send(err);
