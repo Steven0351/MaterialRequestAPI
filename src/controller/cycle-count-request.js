@@ -24,8 +24,8 @@ export default({ config, db }) => {
     });
   });
 
-  // 'v1/cycle-count-request/inventory-items/add/:id - Add cycle count items 
-  api.post('/inventory-items/add/:id', authenticate, (req, res) => {
+  // 'v1/cycle-count-request/add/:id - Add cycle count items 
+  api.post('/add/:id', authenticate, (req, res) => {
     CycleCountRequest.findOne({_id: req.params.id, requestor: req.body.requestor}, (err, cycleCountRequest) => {
       if (err) {
         if (req.body.role == 'admin') {
@@ -72,8 +72,8 @@ export default({ config, db }) => {
     });
   });
 
-  // 'v1/cycle-count-request/inventory-items/:id/:inventoryItem - Edit cycle count item
-  api.put('/inventory-items/:id/:inventoryItem', authenticate, (req, res) => {
+  // 'v1/cycle-count-request/:id/:inventoryItem - Edit cycle count item
+  api.put('/:id/:inventoryItem', authenticate, (req, res) => {
     CycleCountRequest.findOne({_id: req.params.id, requestor: req.body.requestor}, (err, cycleCountRequest) => {
       if (err) {
         if (req.body.role == 'admin') {
@@ -133,7 +133,7 @@ export default({ config, db }) => {
   });
 
   // 'v1/cycle-count-request/inventory-items/:cycleCount/:id - Delete Inventory Item from cycle count request
-  api.delete('/inventory-items/:cycleCount/:id', authenticate, (req, res) => {
+  api.delete('/:cycleCount/:id', authenticate, (req, res) => {
     CycleCountRequest.findOneAndUpdate({_id: req.params.cycleCount, requestor: req.body.requestor}, 
         {$pull: {inventoryItems: req.params.id}}, (err) => {
       if (err) {

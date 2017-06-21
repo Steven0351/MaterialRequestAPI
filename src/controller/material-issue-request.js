@@ -27,7 +27,7 @@ export default({ config, db }) => {
   });
 
   // 'v1/material-issue-request/inventory-items/add/:id' - Add InventoryItem to MaterialIssueRequest
-  api.post('/inventory-items/add/:id', authenticate, (req, res) => {
+  api.post('/add/:id', authenticate, (req, res) => {
     MaterialIssueRequest.findOne({_id: req.params.id, requestor: req.body.requestor}, (err, issueRequest) => {
       if (err) {
         if (req.body.role == 'admin') {

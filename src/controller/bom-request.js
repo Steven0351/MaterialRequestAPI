@@ -23,8 +23,8 @@ export default({ config, db }) => {
     });
   });
 
-  // 'v1/bom-request/inventory-items/add/:id - add subcomponents to BomRequest 
-  api.post('/inventory-items/add/:id', authenticate, (req, res) => {
+  // 'v1/bom-request/add/:id - add subcomponents to BomRequest 
+  api.post('/add/:id', authenticate, (req, res) => {
     BomRequest.findOne({_id: req.params.id, requestor: req.body.requestor},
          (err, bomRequest) => {
       if (err) {
@@ -93,10 +93,10 @@ export default({ config, db }) => {
     });
   });
 
-  // 'v1/bom-request/inventory-items/:bomRequest/:inventoryID - Update Inventory Item
-  api.put('/inventory-items/:bomRequest/:id', authenticate, (req, res) => {
+  // 'v1/bom-request/:bomRequest/:inventoryID - Update Inventory Item
+  api.put('/:bomRequest/:id', authenticate, (req, res) => {
     BomRequest.findOne({_id: req.params.bomRequest, requestor: req.body.requestor},
-         (err, bomRequest) => {
+         (err) => {
       if (err) {
         if (req.body.role == 'admin') {
           InventoryItem.findByIdAndUpdate(req.params.id, {$set: {inventoryID: req.body.inventoryID,
@@ -124,7 +124,7 @@ export default({ config, db }) => {
   });
 
   // 'v1/bom-request/inventory-items/:bomRequest/:inventoryID - Delete Inventory Item from BOM Request and Database
-  api.delete('/inventory-items/:bomRequest/:id', authenticate, (req, res) => {
+  api.delete('/:bomRequest/:id', authenticate, (req, res) => {
     BomRequest.findOneAndUpdate({_id: req.params.bomRequest, requestor: req.body.requestor,
         inventoryItems: req.params.id}, {$pull: {inventoryItems: req.params.id}}, (err) => {
       if (err) {

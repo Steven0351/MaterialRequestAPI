@@ -25,8 +25,8 @@ export default({ config, db }) => {
 		});
 	});
 
-	// 'v1/adjustment-request/inventory-items/add/:id' - Create new item to adjust to add to request
-	api.post('/inventory-items/add/:id', authenticate, (req, res) => {
+	// 'v1/adjustment-request/add/:id' - Create new item to adjust to add to request
+	api.post('/add/:id', authenticate, (req, res) => {
 		AdjustmentRequest.findOne({_id: req.params.id, requestor: req.body.requestor},
         (err, adjustmentRequest) => {
 			if (err) {
@@ -100,8 +100,8 @@ export default({ config, db }) => {
 		});
 	});
 
-	// 'v1/adjustment-request/inventory-items/:adjustmentRequest/:id' - Update Item to Adjust in Adjustment Request
-	api.put('/inventory-items/:adjustmentRequest/:id', authenticate, (req, res) => {
+	// 'v1/adjustment-request/:adjustmentRequest/:id' - Update Item to Adjust in Adjustment Request
+	api.put('/:adjustmentRequest/:id', authenticate, (req, res) => {
 		AdjustmentRequest.findOne({_id: req.params.adjustmentRequest, requestor: req.body.requestor},
         (err) => {
 			if (err) {
@@ -131,7 +131,7 @@ export default({ config, db }) => {
 	});
 
 	// 'v1/adjustment-request/inventory-items/:adjustmentRequest/:id' - Delete itemToAdjust
-	api.delete('/inventory-items/:adjustmentRequest/:id', authenticate, (req, res) => {
+	api.delete('/:adjustmentRequest/:id', authenticate, (req, res) => {
 		AdjustmentRequest.findOneAndUpdate({_id: req.params.adjustmentRequest, requestor: req.body.requestor},
         {$pull: {inventoryItems: req.params.id}}, (err) => {
 			if (err) {

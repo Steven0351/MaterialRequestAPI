@@ -28,8 +28,8 @@ export default({ config, db }) => {
     });
   });
 
-  // 'v1/receiving-issue/inventory-items/add/:id' - Create inventory Item for Receiving Issue
-  api.post('/inventory-items/add/:id', authenticate, (req, res) => {
+  // 'v1/receiving-issue/add/:id' - Create inventory Item for Receiving Issue
+  api.post('/add/:id', authenticate, (req, res) => {
      ReceivingIssue.findOne({_id: req.params.id, requestor: req.body.requestor},
         (err, receivingIssue) => {
       if (err) {
@@ -113,7 +113,7 @@ export default({ config, db }) => {
   });
 
   // 'v1/receiving-issue/:receivingIssue/:inventoryItem' - Update receiving issue item
-  api.put('/inventory-items/:receivingIssue/:inventoryItem', authenticate, (req, res) => {
+  api.put('/:receivingIssue/:inventoryItem', authenticate, (req, res) => {
     ReceivingIssue.findOne({_id: req.params.receivingIssue, requestor: req.body.requestor},
         (err) => {
       if (err) {

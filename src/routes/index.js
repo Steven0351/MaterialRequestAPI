@@ -9,7 +9,9 @@ import creatematerialrequest from '../controller/create-material-request';
 import cyclecountrequest from '../controller/cycle-count-request';
 import materialissuerequest from '../controller/material-issue-request';
 import purchaserequest from '../controller/purchase-request';
+import receivingissue from '../controller/receiving-issue'
 import user from '../controller/user';
+import userinformation from '../controller/user-information'
 import workordercompletionrequest from '../controller/work-order-completion-request';
 
 
@@ -27,7 +29,9 @@ initializeDb(db => {
   router.use('/cycle-count-request', cyclecountrequest({ config, db }));
   router.use('/material-issue-request', materialissuerequest({ config, db }));
   router.use('/purchase-request', purchaserequest({ config, db }));
+  router.use('/receiving-issue', receivingissue({ config, db }));
   router.use('/user', user({ config, db }));
+  router.use('/user-information', userinformation({ config, db }));
   router.use('/work-order-completion-request', workordercompletionrequest({ config, db}));
 });
 

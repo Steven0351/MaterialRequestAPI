@@ -31,8 +31,8 @@ export default({ config, db }) => {
     });
   });
 
-  // 'v1/purchase-request/inventory-items/add/:id - Add inventory items 
-  api.post('/inventory-items/add/:id', authenticate, (req, res) => {
+  // 'v1/purchase-request/add/:id - Add inventory items 
+  api.post('/add/:id', authenticate, (req, res) => {
     PurchaseRequest.findOne({_id: req.params.id, requestor: req.body.requestor}, (err, purchaseRequest) => {
       if (err) {
         if (req.body.role == 'admin') {
@@ -118,7 +118,7 @@ export default({ config, db }) => {
   });
   
   // 'v1/purchase-request/:id/:inventoryItem - Update purchase request line item
-  api.put('/inventory-items/:purchaseRequest/:inventoryItem', authenticate, (req, res) => {
+  api.put('/:purchaseRequest/:inventoryItem', authenticate, (req, res) => {
     PurchaseRequest.findOne({_id: req.params.purchaseRequest, requestor: req.body.requestor},
         (err) => {
       if (err) {
@@ -233,7 +233,7 @@ export default({ config, db }) => {
       });
   });
 
-  // 'v1/purchase-request/hot/:hot - get all purchase requests matching input boolean - Read
+  // 'v1/purchase-request/:hot - get all purchase requests matching input boolean - Read
   api.get('/hot/:hot', authenticate, (req, res) => {
     PurchaseRequest.find({'hot': req.params.hot}, (err, purchaseRequests) => {
       if (err) {
@@ -243,7 +243,7 @@ export default({ config, db }) => {
     });
   });
 
-  // 'v1/purchase-request/placed/:placed' - get all purchase requests matching input boolean - Read
+  // 'v1/purchase-request/:placed' - get all purchase requests matching input boolean - Read
   api.get('/placed/:placed', authenticate, (req, res) => {
     PurchaseRequest.find({'placed': req.params.placed}, (err, purchaseRequests) => {
       if (err) {
@@ -253,7 +253,7 @@ export default({ config, db }) => {
     });
   });
 
-  // 'v1/purchase-request/requestor/:requestor' - get all purchase requests for specific requestor - Read
+  // 'v1/purchase-request/:requestor' - get all purchase requests for specific requestor - Read
   api.get('/requestor/:requestor', authenticate, (req, res) => {
     PurchaseRequest.find({'requestor': req.params.requestor}, (err, purchaseRequests) => {
       if (err) {
